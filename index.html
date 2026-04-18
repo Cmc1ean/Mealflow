@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>MealFlow — Your Cookbook</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #FAF7F2;
+    --warm-white: #FFFEF9;
+    --ink: #1C1A17;
+    --ink-light: #5C5750;
+    --terracotta: #C4623A;
+    --terracotta-light: #E8845F;
+    --terracotta-pale: #F5E6DF;
+    --sage: #7A9E7E;
+    --sage-pale: #E8F0E9;
+    --gold: #D4A843;
+    --border: #E8E2D9;
+    --shadow: 0 2px 16px rgba(28,26,23,0.08);
+    --shadow-lg: 0 8px 40px rgba(28,26,23,0.14);
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+- { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+font-family: ‘DM Sans’, sans-serif;
+background: var(–cream);
+color: var(–ink);
+min-height: 100vh;
+font-size: 16px;
+line-height: 1.5;
+}
+
+/* ── Header ── */
+header {
+background: var(–ink);
+color: var(–cream);
+padding: 18px 20px 16px;
+position: sticky;
+top: 0;
+z-index: 100;
+display: flex;
+align-items: center;
+justify-content: space-between;
+box-shadow: 0 2px 12px rgba(28,26,23,0.3);
+}
+.logo {
+font-family: ‘Playfair Display’, serif;
+font-size: 1.5rem;
+font-weight: 700;
+letter-spacing: -0.02em;
+}
+.logo span { color: var(–terracotta-light); font-style: italic; }
+.header-actions { display: flex; gap: 10px; }
+.icon-btn {
+background: rgba(255,255,255,0.1);
+border: none;
+color: var(–cream);
+width: 38px; height: 38px;
+border-radius: 50%;
+cursor: pointer;
+display: flex; align-items: center; justify-content: center;
+font-size: 1.1rem;
+transition: background 0.2s;
+}
+.icon-btn:hover { background: rgba(255,255,255,0.2); }
+
+/* ── Nav tabs ── */
+nav {
+background: var(–warm-white);
+border-bottom: 1px solid var(–border);
+display: flex;
+padding: 0 20px;
+gap: 4px;
+overflow-x: auto;
+scrollbar-width: none;
+}
+nav::-webkit-scrollbar { display: none; }
+.nav-tab {
+background: none;
+border: none;
+padding: 14px 16px 12px;
+font-family: ‘DM Sans’, sans-serif;
+font-size: 0.875rem;
+font-weight: 500;
+color: var(–ink-light);
+cursor: pointer;
+white-space: nowrap;
+border-bottom: 2px solid transparent;
+transition: all 0.2s;
+}
+.nav-tab.active {
+color: var(–terracotta);
+border-bottom-color: var(–terracotta);
+}
+
+/* ── Main container ── */
+main { padding: 20px; max-width: 640px; margin: 0 auto; }
+
+/* ── Section ── */
+.section { display: none; }
+.section.active { display: block; }
+
+/* ── Card ── */
+.card {
+background: var(–warm-white);
+border-radius: var(–radius);
+padding: 20px;
+margin-bottom: 14px;
+box-shadow: var(–shadow);
+border: 1px solid var(–border);
+}
+
+/* ── Recipe cards ── */
+.recipe-card {
+background: var(–warm-white);
+border-radius: var(–radius);
+margin-bottom: 12px;
+box-shadow: var(–shadow);
+border: 1px solid var(–border);
+overflow: hidden;
+cursor: pointer;
+transition: transform 0.15s, box-shadow 0.15s;
+}
+.recipe-card:active { transform: scale(0.98); }
+.recipe-card-body { padding: 16px 18px; }
+.recipe-name {
+font-family: ‘Playfair Display’, serif;
+font-size: 1.1rem;
+font-weight: 500;
+margin-bottom: 4px;
+}
+.recipe-meta {
+font-size: 0.8rem;
+color: var(–ink-light);
+display: flex;
+gap: 12px;
+flex-wrap: wrap;
+}
+.tag {
+display: inline-block;
+background: var(–terracotta-pale);
+color: var(–terracotta);
+border-radius: 20px;
+padding: 2px 10px;
+font-size: 0.75rem;
+font-weight: 500;
+margin: 2px 2px 0 0;
+}
+.tag.sage { background: var(–sage-pale); color: var(–sage); }
+
+/* ── Empty state ── */
+.empty-state {
+text-align: center;
+padding: 48px 20px;
+color: var(–ink-light);
+}
+.empty-state .icon { font-size: 3rem; margin-bottom: 14px; }
+.empty-state h3 {
+font-family: ‘Playfair Display’, serif;
+font-size: 1.3rem;
+color: var(–ink);
+margin-bottom: 8px;
+}
+.empty-state p { font-size: 0.9rem; line-height: 1.6; }
+
+/* ── Buttons ── */
+.btn {
+display: inline-flex;
+align-items: center;
+justify-content: center;
+gap: 8px;
+padding: 14px 22px;
+border-radius: var(–radius-sm);
+border: none;
+font-family: ‘DM Sans’, sans-serif;
+font-size: 0.95rem;
+font-weight: 500;
+cursor: pointer;
+transition: all 0.2s;
+text-decoration: none;
+width: 100%;
+}
+.btn-primary {
+background: var(–terracotta);
+color: white;
+}
+.btn-primary:hover { background: var(–terracotta-light); }
+.btn-secondary {
+background: var(–terracotta-pale);
+color: var(–terracotta);
+}
+.btn-secondary:hover { background: #EDD5CA; }
+.btn-ghost {
+background: transparent;
+color: var(–ink-light);
+border: 1px solid var(–border);
+}
+.btn-ghost:hover { background: var(–cream); }
+.btn-danger {
+background: #FDE8E8;
+color: #C0392B;
+}
+.btn-sm {
+padding: 8px 14px;
+font-size: 0.82rem;
+width: auto;
+border-radius: 8px;
+}
+.btn-record {
+background: var(–ink);
+color: white;
+border-radius: 50px;
+padding: 16px 28px;
+font-size: 1rem;
+}
+.btn-record.recording {
+background: #C0392B;
+animation: pulse 1.2s infinite;
+}
+@keyframes pulse {
+0%, 100% { box-shadow: 0 0 0 0 rgba(192,57,43,0.4); }
+50% { box-shadow: 0 0 0 10px rgba(192,57,43,0); }
+}
+
+/* ── Forms ── */
+.form-group { margin-bottom: 16px; }
+label {
+display: block;
+font-size: 0.82rem;
+font-weight: 500;
+color: var(–ink-light);
+margin-bottom: 6px;
+text-transform: uppercase;
+letter-spacing: 0.04em;
+}
+input, textarea, select {
+width: 100%;
+padding: 12px 14px;
+border: 1.5px solid var(–border);
+border-radius: var(–radius-sm);
+font-family: ‘DM Sans’, sans-serif;
+font-size: 0.95rem;
+background: var(–warm-white);
+color: var(–ink);
+transition: border-color 0.2s;
+-webkit-appearance: none;
+}
+input:focus, textarea:focus, select:focus {
+outline: none;
+border-color: var(–terracotta);
+}
+textarea { resize: vertical; min-height: 80px; }
+
+/* ── Dictation box ── */
+.dictation-area {
+background: var(–ink);
+border-radius: var(–radius);
+padding: 20px;
+margin-bottom: 16px;
+text-align: center;
+}
+.dictation-area h3 {
+font-family: ‘Playfair Display’, serif;
+font-size: 1.1rem;
+color: var(–cream);
+margin-bottom: 6px;
+}
+.dictation-area p {
+font-size: 0.82rem;
+color: rgba(250,247,242,0.6);
+margin-bottom: 16px;
+}
+.transcript-box {
+background: rgba(255,255,255,0.08);
+border-radius: var(–radius-sm);
+padding: 12px;
+min-height: 60px;
+color: var(–cream);
+font-size: 0.9rem;
+text-align: left;
+margin-bottom: 14px;
+border: 1px solid rgba(255,255,255,0.1);
+font-style: italic;
+}
+.transcript-box.placeholder { color: rgba(250,247,242,0.35); font-style: italic; }
+
+/* ── Ingredients list builder ── */
+.ingredient-row {
+display: grid;
+grid-template-columns: 2fr 1fr 1.5fr 36px;
+gap: 8px;
+align-items: center;
+margin-bottom: 8px;
+}
+.ingredient-row input { margin: 0; }
+.remove-btn {
+background: #FDE8E8;
+border: none;
+border-radius: 8px;
+width: 36px; height: 36px;
+cursor: pointer;
+display: flex; align-items: center; justify-content: center;
+color: #C0392B;
+font-size: 1rem;
+flex-shrink: 0;
+transition: background 0.2s;
+}
+.remove-btn:hover { background: #FACACA; }
+
+/* ── Modal ── */
+.modal-overlay {
+display: none;
+position: fixed;
+inset: 0;
+background: rgba(28,26,23,0.6);
+z-index: 200;
+backdrop-filter: blur(4px);
+align-items: flex-end;
+justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+background: var(–warm-white);
+border-radius: var(–radius) var(–radius) 0 0;
+padding: 24px 20px 36px;
+width: 100%;
+max-width: 640px;
+max-height: 90vh;
+overflow-y: auto;
+animation: slideUp 0.3s ease;
+}
+@keyframes slideUp {
+from { transform: translateY(100%); }
+to { transform: translateY(0); }
+}
+.modal-header {
+display: flex;
+align-items: center;
+justify-content: space-between;
+margin-bottom: 20px;
+padding-bottom: 14px;
+border-bottom: 1px solid var(–border);
+}
+.modal-title {
+font-family: ‘Playfair Display’, serif;
+font-size: 1.3rem;
+font-weight: 500;
+}
+.close-btn {
+background: var(–cream);
+border: none;
+width: 34px; height: 34px;
+border-radius: 50%;
+cursor: pointer;
+font-size: 1.1rem;
+display: flex; align-items: center; justify-content: center;
+color: var(–ink-light);
+}
+
+/* ── Loading spinner ── */
+.spinner {
+display: inline-block;
+width: 18px; height: 18px;
+border: 2px solid rgba(255,255,255,0.3);
+border-top-color: white;
+border-radius: 50%;
+animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── API key section ── */
+.api-banner {
+background: linear-gradient(135deg, var(–ink) 0%, #2D2A25 100%);
+border-radius: var(–radius);
+padding: 20px;
+margin-bottom: 20px;
+color: var(–cream);
+}
+.api-banner h3 {
+font-family: ‘Playfair Display’, serif;
+font-size: 1.1rem;
+margin-bottom: 6px;
+}
+.api-banner p { font-size: 0.82rem; opacity: 0.7; margin-bottom: 14px; }
+.api-input-row { display: flex; gap: 8px; }
+.api-input-row input {
+background: rgba(255,255,255,0.1);
+border-color: rgba(255,255,255,0.2);
+color: var(–cream);
+flex: 1;
+}
+.api-input-row input::placeholder { color: rgba(250,247,242,0.35); }
+.api-input-row input:focus { border-color: var(–terracotta-light); }
+.api-save-btn {
+background: var(–terracotta);
+color: white;
+border: none;
+border-radius: var(–radius-sm);
+padding: 0 16px;
+font-family: ‘DM Sans’, sans-serif;
+font-weight: 500;
+cursor: pointer;
+white-space: nowrap;
+font-size: 0.9rem;
+}
+.api-status {
+font-size: 0.78rem;
+margin-top: 8px;
+opacity: 0.7;
+}
+.api-status.ok { color: #7FD17F; opacity: 1; }
+
+/* ── Recipe detail ── */
+.recipe-detail-section { margin-bottom: 20px; }
+.recipe-detail-section h4 {
+font-size: 0.78rem;
+font-weight: 500;
+text-transform: uppercase;
+letter-spacing: 0.06em;
+color: var(–ink-light);
+margin-bottom: 10px;
+padding-bottom: 6px;
+border-bottom: 1px solid var(–border);
+}
+.ingredient-list { list-style: none; }
+.ingredient-list li {
+display: flex;
+justify-content: space-between;
+padding: 7px 0;
+border-bottom: 1px solid var(–border);
+font-size: 0.92rem;
+}
+.ingredient-list li:last-child { border-bottom: none; }
+.ing-amount { color: var(–terracotta); font-weight: 500; font-size: 0.85rem; }
+.steps-list { list-style: none; counter-reset: steps; }
+.steps-list li {
+counter-increment: steps;
+padding: 10px 0 10px 36px;
+position: relative;
+border-bottom: 1px solid var(–border);
+font-size: 0.92rem;
+line-height: 1.6;
+}
+.steps-list li:last-child { border-bottom: none; }
+.steps-list li::before {
+content: counter(steps);
+position: absolute;
+left: 0;
+top: 10px;
+background: var(–terracotta);
+color: white;
+width: 22px; height: 22px;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 0.72rem;
+font-weight: 700;
+}
+
+/* ── Portion scaler ── */
+.portion-scaler {
+display: flex;
+align-items: center;
+gap: 14px;
+background: var(–terracotta-pale);
+border-radius: var(–radius-sm);
+padding: 12px 16px;
+margin-bottom: 16px;
+}
+.portion-scaler label { margin: 0; font-size: 0.85rem; color: var(–terracotta); flex: 1; }
+.scaler-controls { display: flex; align-items: center; gap: 10px; }
+.scaler-btn {
+background: var(–terracotta);
+color: white;
+border: none;
+width: 30px; height: 30px;
+border-radius: 50%;
+font-size: 1.1rem;
+cursor: pointer;
+display: flex; align-items: center; justify-content: center;
+}
+.scaler-count { font-weight: 700; font-size: 1.1rem; min-width: 24px; text-align: center; }
+
+/* ── Floating add button ── */
+.fab {
+position: fixed;
+bottom: 24px;
+right: 20px;
+width: 58px; height: 58px;
+background: var(–terracotta);
+color: white;
+border: none;
+border-radius: 50%;
+font-size: 1.6rem;
+cursor: pointer;
+box-shadow: 0 4px 20px rgba(196,98,58,0.45);
+display: flex; align-items: center; justify-content: center;
+transition: transform 0.2s, box-shadow 0.2s;
+z-index: 150;
+}
+.fab:active { transform: scale(0.93); }
+
+/* ── Toast ── */
+.toast {
+position: fixed;
+bottom: 90px;
+left: 50%;
+transform: translateX(-50%) translateY(20px);
+background: var(–ink);
+color: var(–cream);
+padding: 10px 20px;
+border-radius: 50px;
+font-size: 0.85rem;
+opacity: 0;
+transition: all 0.3s;
+z-index: 300;
+pointer-events: none;
+white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── Utility ── */
+.divider { border: none; border-top: 1px solid var(–border); margin: 16px 0; }
+.text-muted { color: var(–ink-light); font-size: 0.85rem; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.section-title {
+font-family: ‘Playfair Display’, serif;
+font-size: 1.5rem;
+font-weight: 500;
+margin-bottom: 4px;
+}
+.section-sub { color: var(–ink-light); font-size: 0.85rem; margin-bottom: 20px; }
+.badge {
+display: inline-block;
+background: var(–terracotta);
+color: white;
+border-radius: 50px;
+padding: 2px 9px;
+font-size: 0.75rem;
+font-weight: 700;
+margin-left: 6px;
+}
+
+/* AI parsing result preview */
+.ai-result {
+background: var(–sage-pale);
+border: 1.5px solid var(–sage);
+border-radius: var(–radius-sm);
+padding: 14px;
+margin-bottom: 14px;
+font-size: 0.85rem;
+color: var(–ink);
+line-height: 1.6;
+}
+.ai-result-title {
+font-weight: 700;
+color: var(–sage);
+font-size: 0.78rem;
+text-transform: uppercase;
+letter-spacing: 0.05em;
+margin-bottom: 6px;
+}
+</style>
+
+</head>
+<body>
+
+<header>
+  <div class="logo">Meal<span>Flow</span></div>
+  <div class="header-actions">
+    <button class="icon-btn" onclick="exportData()" title="Export backup">⬇</button>
+    <button class="icon-btn" onclick="document.getElementById('importFile').click()" title="Import backup">⬆</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+  </div>
+</header>
+
+<nav>
+  <button class="nav-tab active" onclick="showSection('cookbook', this)">📖 Cookbook</button>
+  <button class="nav-tab" onclick="showSection('add', this)">✨ Add Recipe</button>
+  <button class="nav-tab" onclick="showSection('settings', this)">⚙️ Settings</button>
+</nav>
+
+<main>
+
+  <!-- ══ COOKBOOK ══ -->
+
+  <section id="cookbook" class="section active">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+      <h1 class="section-title">My Cookbook</h1>
+      <span id="recipeCount" class="badge">0</span>
+    </div>
+    <p class="section-sub">Your saved batch-cook favourites</p>
+
+```
+<input type="text" id="searchInput" placeholder="🔍  Search recipes..." oninput="renderCookbook()" style="margin-bottom:16px;">
+
+<div id="recipeList"></div>
+```
+
+  </section>
+
+  <!-- ══ ADD RECIPE ══ -->
+
+  <section id="add" class="section">
+    <h1 class="section-title">Add Recipe</h1>
+    <p class="section-sub">Dictate or type your recipe — AI will structure it</p>
+
+```
+<!-- Dictation -->
+<div class="dictation-area">
+  <h3>🎙 Speak your recipe</h3>
+  <p>Hit record and describe it naturally — ingredients, steps, whatever comes to mind</p>
+  <div class="transcript-box placeholder" id="transcriptBox">Your words will appear here as you speak…</div>
+  <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+    <button class="btn btn-record" id="recordBtn" onclick="toggleRecording()">🎙 Start Recording</button>
+    <button class="btn btn-secondary btn-sm" onclick="clearTranscript()" style="width:auto;">Clear</button>
+  </div>
+  <p style="font-size:0.75rem; color:rgba(250,247,242,0.45); margin-top:10px;">
+    📱 iPhone tip: tap the mic on your keyboard as an alternative
+  </p>
+</div>
+
+<!-- Or type it -->
+<div class="card">
+  <div class="form-group">
+    <label>Or type / paste your recipe description</label>
+    <textarea id="rawRecipeText" rows="4" placeholder="e.g. 'Make a big pot of chicken tikka masala — I use 4 chicken breasts, a tin of tomatoes, onion, garlic, ginger, tikka paste, coconut milk. Fry the onion first, add paste, then chicken, then the rest, simmer 25 mins…'"></textarea>
+  </div>
+  <button class="btn btn-primary" onclick="parseWithAI()" id="parseBtn">
+    ✨ Parse with AI
+  </button>
+</div>
+
+<!-- Manual form (shown after AI parse or directly) -->
+<div id="recipeForm" style="display:none;">
+  <div class="card">
+    <div class="form-group">
+      <label>Recipe Name</label>
+      <input type="text" id="recipeName" placeholder="e.g. Chicken Tikka Masala">
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Base Portions</label>
+        <input type="number" id="recipePortions" value="5" min="1" max="20">
+      </div>
+      <div class="form-group">
+        <label>Cook Time</label>
+        <input type="text" id="recipeCookTime" placeholder="e.g. 45 min">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Tags (comma-separated)</label>
+      <input type="text" id="recipeTags" placeholder="e.g. high-protein, freezer-friendly, quick">
+    </div>
+    <div class="form-group">
+      <label>Notes / Source URL</label>
+      <input type="text" id="recipeNotes" placeholder="e.g. Ottolenghi inspiration, or paste URL">
+    </div>
+  </div>
+
+  <div class="card">
+    <label style="margin-bottom:12px; display:block;">Ingredients</label>
+    <div style="display:grid; grid-template-columns:2fr 1fr 1.5fr 36px; gap:6px; margin-bottom:6px;">
+      <span style="font-size:0.72rem; color:var(--ink-light); text-transform:uppercase;">Item</span>
+      <span style="font-size:0.72rem; color:var(--ink-light); text-transform:uppercase;">Qty</span>
+      <span style="font-size:0.72rem; color:var(--ink-light); text-transform:uppercase;">Unit</span>
+      <span></span>
+    </div>
+    <div id="ingredientRows"></div>
+    <button class="btn btn-ghost" onclick="addIngredientRow()" style="margin-top:8px;">
+      + Add Ingredient
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="form-group">
+      <label>Method / Steps</label>
+      <textarea id="recipeMethod" rows="6" placeholder="Describe the cooking steps…"></textarea>
+    </div>
+  </div>
+
+  <button class="btn btn-primary" onclick="saveRecipe()" style="margin-bottom:80px;">
+    💾 Save to Cookbook
+  </button>
+</div>
+
+<!-- Show form manually -->
+<div id="manualFormToggle">
+  <button class="btn btn-ghost" onclick="showManualForm()">
+    ✏️ Skip AI — fill in manually
+  </button>
+</div>
+```
+
+  </section>
+
+  <!-- ══ SETTINGS ══ -->
+
+  <section id="settings" class="section">
+    <h1 class="section-title">Settings</h1>
+    <p class="section-sub">Configure your MealFlow</p>
+
+```
+<div class="api-banner">
+  <h3>🤖 Anthropic API Key</h3>
+  <p>Required for AI recipe parsing from your dictation. Get a free key at console.anthropic.com — costs pennies per month at this scale.</p>
+  <div class="api-input-row">
+    <input type="password" id="apiKeyInput" placeholder="sk-ant-…" autocomplete="off">
+    <button class="api-save-btn" onclick="saveApiKey()">Save</button>
+  </div>
+  <div class="api-status" id="apiStatus"></div>
+</div>
+
+<div class="card">
+  <div class="form-group">
+    <label>Default batch portions</label>
+    <select id="defaultPortions">
+      <option value="4">4 portions</option>
+      <option value="5" selected>5 portions</option>
+      <option value="6">6 portions</option>
+      <option value="8">8 portions</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>Recipes per week</label>
+    <select id="recipesPerWeek">
+      <option value="3">3 recipes</option>
+      <option value="4" selected>4 recipes</option>
+    </select>
+  </div>
+  <button class="btn btn-secondary" onclick="saveSettings()">Save Preferences</button>
+</div>
+
+<div class="card">
+  <h4 style="font-weight:600; margin-bottom:10px;">Data & Backup</h4>
+  <p class="text-muted" style="margin-bottom:14px;">Your recipes are stored privately in your browser. Export regularly as a backup — especially before clearing browser data.</p>
+  <div style="display:flex; gap:8px; flex-wrap:wrap;">
+    <button class="btn btn-secondary btn-sm" onclick="exportData()">⬇ Export Backup</button>
+    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('importFile').click()">⬆ Import Backup</button>
+    <button class="btn btn-danger btn-sm" onclick="confirmClearAll()">🗑 Clear All Data</button>
+  </div>
+</div>
+
+<div class="card">
+  <h4 style="font-weight:600; margin-bottom:6px;">About MealFlow</h4>
+  <p class="text-muted">Week 1 of your meal prep automation project. Next up: weekly planner + Ocado shopping list.</p>
+  <p class="text-muted" style="margin-top:6px;">Version 1.0 · Built with Claude</p>
+</div>
+```
+
+  </section>
+
+</main>
+
+<!-- ── FAB ── -->
+
+<button class="fab" onclick="showSection('add', document.querySelectorAll('.nav-tab')[1]); window.scrollTo(0,0);">+</button>
+
+<!-- ── Recipe Detail Modal ── -->
+
+<div class="modal-overlay" id="recipeModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modalTitle">Recipe</h2>
+      <button class="close-btn" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<!-- ── Toast ── -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── State ──
+let recipes = JSON.parse(localStorage.getItem('mealflow_recipes') || '[]');
+let editingId = null;
+let recognition = null;
+let isRecording = false;
+let currentPortions = 5;
+
+// ── Section navigation ──
+function showSection(id, tab) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (tab) tab.classList.add('active');
+  if (id === 'cookbook') renderCookbook();
+}
+
+// ── Toast ──
+function toast(msg, duration=2500) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), duration);
+}
+
+// ── Cookbook render ──
+function renderCookbook() {
+  const query = (document.getElementById('searchInput')?.value || '').toLowerCase();
+  const filtered = recipes.filter(r =>
+    r.name.toLowerCase().includes(query) ||
+    (r.tags||[]).some(t => t.toLowerCase().includes(query))
+  );
+  document.getElementById('recipeCount').textContent = recipes.length;
+  const list = document.getElementById('recipeList');
+  if (recipes.length === 0) {
+    list.innerHTML = `<div class="empty-state">
+      <div class="icon">📖</div>
+      <h3>Your cookbook is empty</h3>
+      <p>Add your first recipe using the <strong>Add Recipe</strong> tab — dictate it or type it, and AI will do the rest.</p>
+    </div>`;
+    return;
+  }
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="icon">🔍</div><h3>No matches</h3><p>Try a different search term.</p></div>`;
+    return;
+  }
+  list.innerHTML = filtered.map(r => `
+    <div class="recipe-card" onclick="openRecipe('${r.id}')">
+      <div class="recipe-card-body">
+        <div class="recipe-name">${r.name}</div>
+        <div class="recipe-meta" style="margin:5px 0 8px;">
+          ${r.cookTime ? `⏱ ${r.cookTime}` : ''}
+          ${r.portions ? `· 🍽 ${r.portions} portions` : ''}
+        </div>
+        <div>${(r.tags||[]).map(t => `<span class="tag">${t}</span>`).join('')}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── Open recipe modal ──
+function openRecipe(id) {
+  const r = recipes.find(x => x.id === id);
+  if (!r) return;
+  currentPortions = r.portions || 5;
+  document.getElementById('modalTitle').textContent = r.name;
+  renderModalBody(r);
+  document.getElementById('recipeModal').classList.add('open');
+}
+
+function renderModalBody(r) {
+  const scale = currentPortions / (r.portions || 5);
+  const ings = (r.ingredients||[]).map(i => {
+    const scaled = i.qty ? (parseFloat(i.qty) * scale).toFixed(scale !== 1 ? 1 : 0).replace(/\.0$/, '') : '';
+    return `<li><span>${i.name}</span><span class="ing-amount">${scaled} ${i.unit||''}</span></li>`;
+  }).join('');
+  const steps = r.method ? r.method.split(/\n+/).filter(Boolean).map(s => `<li>${s}</li>`).join('') : '<li>No steps recorded.</li>';
+  document.getElementById('modalBody').innerHTML = `
+    <div class="portion-scaler">
+      <label style="margin:0;">🍽 Portions</label>
+      <div class="scaler-controls">
+        <button class="scaler-btn" onclick="adjustPortions('${r.id}',-1)">−</button>
+        <span class="scaler-count" id="portionCount">${currentPortions}</span>
+        <button class="scaler-btn" onclick="adjustPortions('${r.id}',1)">+</button>
+      </div>
+    </div>
+    ${r.tags?.length ? `<div style="margin-bottom:14px;">${r.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>` : ''}
+    ${r.notes ? `<p class="text-muted" style="margin-bottom:14px;">📎 ${r.notes}</p>` : ''}
+    <div class="recipe-detail-section">
+      <h4>Ingredients</h4>
+      <ul class="ingredient-list">${ings || '<li>None recorded</li>'}</ul>
+    </div>
+    <div class="recipe-detail-section">
+      <h4>Method</h4>
+      <ol class="steps-list">${steps}</ol>
+    </div>
+    <hr class="divider">
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+      <button class="btn btn-secondary btn-sm" onclick="editRecipe('${r.id}')">✏️ Edit</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteRecipe('${r.id}')">🗑 Delete</button>
+    </div>
+  `;
+}
+
+function adjustPortions(id, delta) {
+  currentPortions = Math.max(1, currentPortions + delta);
+  document.getElementById('portionCount').textContent = currentPortions;
+  const r = recipes.find(x => x.id === id);
+  if (r) renderModalBody(r);
+}
+
+function closeModal() {
+  document.getElementById('recipeModal').classList.remove('open');
+}
+
+// ── Ingredient rows ──
+function addIngredientRow(name='', qty='', unit='') {
+  const row = document.createElement('div');
+  row.className = 'ingredient-row';
+  row.innerHTML = `
+    <input type="text" placeholder="e.g. chicken breast" value="${name}">
+    <input type="text" placeholder="400" value="${qty}">
+    <input type="text" placeholder="g / ml / tsp…" value="${unit}">
+    <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
+  `;
+  document.getElementById('ingredientRows').appendChild(row);
+}
+
+function getIngredients() {
+  return Array.from(document.querySelectorAll('#ingredientRows .ingredient-row')).map(row => {
+    const inputs = row.querySelectorAll('input');
+    return { name: inputs[0].value.trim(), qty: inputs[1].value.trim(), unit: inputs[2].value.trim() };
+  }).filter(i => i.name);
+}
+
+// ── Show form ──
+function showManualForm() {
+  document.getElementById('recipeForm').style.display = 'block';
+  document.getElementById('manualFormToggle').style.display = 'none';
+  if (document.getElementById('ingredientRows').children.length === 0) {
+    addIngredientRow();
+  }
+}
+
+// ── Speech recognition ──
+function toggleRecording() {
+  if (isRecording) {
+    stopRecording();
+  } else {
+    startRecording();
+  }
+}
+
+function startRecording() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    toast('❌ Speech recognition not supported — try Chrome or Safari');
+    return;
+  }
+  recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = 'en-GB';
+  let finalTranscript = '';
+  recognition.onresult = (e) => {
+    let interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) finalTranscript += e.results[i][0].transcript + ' ';
+      else interim += e.results[i][0].transcript;
+    }
+    const box = document.getElementById('transcriptBox');
+    box.classList.remove('placeholder');
+    box.textContent = finalTranscript + interim;
+    document.getElementById('rawRecipeText').value = finalTranscript + interim;
+  };
+  recognition.onerror = () => { stopRecording(); toast('🎙 Recording stopped'); };
+  recognition.onend = () => { if (isRecording) recognition.start(); };
+  recognition.start();
+  isRecording = true;
+  const btn = document.getElementById('recordBtn');
+  btn.classList.add('recording');
+  btn.textContent = '⏹ Stop Recording';
+}
+
+function stopRecording() {
+  if (recognition) { recognition.stop(); recognition = null; }
+  isRecording = false;
+  const btn = document.getElementById('recordBtn');
+  btn.classList.remove('recording');
+  btn.textContent = '🎙 Start Recording';
+}
+
+function clearTranscript() {
+  document.getElementById('transcriptBox').textContent = 'Your words will appear here as you speak…';
+  document.getElementById('transcriptBox').classList.add('placeholder');
+  document.getElementById('rawRecipeText').value = '';
+}
+
+// ── AI Parse ──
+async function parseWithAI() {
+  const text = document.getElementById('rawRecipeText').value.trim();
+  if (!text) { toast('Please dictate or type your recipe first'); return; }
+  const apiKey = localStorage.getItem('mealflow_api_key');
+  if (!apiKey) {
+    toast('⚙️ Add your API key in Settings first');
+    showSection('settings', document.querySelectorAll('.nav-tab')[2]);
+    return;
+  }
+  const btn = document.getElementById('parseBtn');
+  btn.innerHTML = '<span class="spinner"></span> Parsing…';
+  btn.disabled = true;
+
+  const prompt = `You are a recipe parser. The user has dictated or described a recipe in natural language. Extract the structured recipe and return ONLY valid JSON with no markdown, no backticks, no explanation. Use this exact schema:
+{
+  "name": "Recipe Name",
+  "portions": 5,
+  "cookTime": "45 min",
+  "tags": ["tag1","tag2"],
+  "ingredients": [{"name":"ingredient","qty":"400","unit":"g"}],
+  "method": "Step 1 description.\\nStep 2 description.\\nStep 3 description.",
+  "notes": ""
+}
+
+Rules:
+- portions should be 4-6 for batch cooking unless specified
+- tags can include: high-protein, vegetarian, vegan, freezer-friendly, quick, batch-cook, dairy-free, gluten-free
+- method should be clear numbered steps separated by newlines
+- qty should be a number string, unit should be g/ml/kg/l/tsp/tbsp/cup/whole/handful etc
+
+User input: """${text}"""`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1500,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await response.json();
+    if (data.error) throw new Error(data.error.message);
+    const rawText = data.content[0].text.trim().replace(/```json|```/g, '');
+    const parsed = JSON.parse(rawText);
+    populateForm(parsed);
+    toast('✅ Recipe parsed! Review and save.');
+  } catch (e) {
+    toast('❌ Parse failed — check API key or try again');
+    console.error(e);
+  } finally {
+    btn.innerHTML = '✨ Parse with AI';
+    btn.disabled = false;
+  }
+}
+
+function populateForm(r) {
+  document.getElementById('recipeName').value = r.name || '';
+  document.getElementById('recipePortions').value = r.portions || 5;
+  document.getElementById('recipeCookTime').value = r.cookTime || '';
+  document.getElementById('recipeTags').value = (r.tags||[]).join(', ');
+  document.getElementById('recipeMethod').value = r.method || '';
+  document.getElementById('recipeNotes').value = r.notes || '';
+  document.getElementById('ingredientRows').innerHTML = '';
+  (r.ingredients||[]).forEach(i => addIngredientRow(i.name, i.qty, i.unit));
+  showManualForm();
+}
+
+// ── Save recipe ──
+function saveRecipe() {
+  const name = document.getElementById('recipeName').value.trim();
+  if (!name) { toast('Please add a recipe name'); return; }
+  const recipe = {
+    id: editingId || Date.now().toString(),
+    name,
+    portions: parseInt(document.getElementById('recipePortions').value) || 5,
+    cookTime: document.getElementById('recipeCookTime').value.trim(),
+    tags: document.getElementById('recipeTags').value.split(',').map(t=>t.trim()).filter(Boolean),
+    notes: document.getElementById('recipeNotes').value.trim(),
+    ingredients: getIngredients(),
+    method: document.getElementById('recipeMethod').value.trim(),
+    createdAt: editingId ? (recipes.find(r=>r.id===editingId)?.createdAt || Date.now()) : Date.now()
+  };
+  if (editingId) {
+    recipes = recipes.map(r => r.id === editingId ? recipe : r);
+    editingId = null;
+  } else {
+    recipes.push(recipe);
+  }
+  localStorage.setItem('mealflow_recipes', JSON.stringify(recipes));
+  toast('✅ Recipe saved!');
+  resetAddForm();
+  showSection('cookbook', document.querySelectorAll('.nav-tab')[0]);
+}
+
+function resetAddForm() {
+  document.getElementById('rawRecipeText').value = '';
+  clearTranscript();
+  document.getElementById('recipeForm').style.display = 'none';
+  document.getElementById('manualFormToggle').style.display = 'block';
+  document.getElementById('recipeName').value = '';
+  document.getElementById('recipePortions').value = '5';
+  document.getElementById('recipeCookTime').value = '';
+  document.getElementById('recipeTags').value = '';
+  document.getElementById('recipeNotes').value = '';
+  document.getElementById('recipeMethod').value = '';
+  document.getElementById('ingredientRows').innerHTML = '';
+  editingId = null;
+}
+
+// ── Edit / Delete ──
+function editRecipe(id) {
+  closeModal();
+  const r = recipes.find(x => x.id === id);
+  if (!r) return;
+  editingId = id;
+  showSection('add', document.querySelectorAll('.nav-tab')[1]);
+  populateForm(r);
+  window.scrollTo(0,0);
+}
+
+function deleteRecipe(id) {
+  if (!confirm('Delete this recipe?')) return;
+  recipes = recipes.filter(r => r.id !== id);
+  localStorage.setItem('mealflow_recipes', JSON.stringify(recipes));
+  closeModal();
+  renderCookbook();
+  toast('🗑 Recipe deleted');
+}
+
+// ── Settings ──
+function saveApiKey() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key.startsWith('sk-ant-')) {
+    document.getElementById('apiStatus').textContent = '⚠ Key should start with sk-ant-';
+    document.getElementById('apiStatus').className = 'api-status';
+    return;
+  }
+  localStorage.setItem('mealflow_api_key', key);
+  document.getElementById('apiStatus').textContent = '✓ API key saved';
+  document.getElementById('apiStatus').className = 'api-status ok';
+  toast('✅ API key saved');
+}
+
+function saveSettings() {
+  localStorage.setItem('mealflow_portions', document.getElementById('defaultPortions').value);
+  localStorage.setItem('mealflow_per_week', document.getElementById('recipesPerWeek').value);
+  toast('✅ Preferences saved');
+}
+
+function loadSettings() {
+  const key = localStorage.getItem('mealflow_api_key');
+  if (key) {
+    document.getElementById('apiKeyInput').value = key;
+    document.getElementById('apiStatus').textContent = '✓ API key saved';
+    document.getElementById('apiStatus').className = 'api-status ok';
+  }
+  const p = localStorage.getItem('mealflow_portions');
+  if (p) document.getElementById('defaultPortions').value = p;
+  const pw = localStorage.getItem('mealflow_per_week');
+  if (pw) document.getElementById('recipesPerWeek').value = pw;
+}
+
+// ── Export / Import ──
+function exportData() {
+  const data = {
+    recipes,
+    exportedAt: new Date().toISOString(),
+    version: '1.0'
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `mealflow-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  toast('✅ Backup exported');
+}
+
+function importData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!data.recipes) throw new Error('Invalid format');
+      const merge = confirm(`Import ${data.recipes.length} recipes? (Merges with existing — duplicates kept)`);
+      if (!merge) return;
+      const existingIds = new Set(recipes.map(r => r.id));
+      const newOnes = data.recipes.filter(r => !existingIds.has(r.id));
+      recipes = [...recipes, ...newOnes];
+      localStorage.setItem('mealflow_recipes', JSON.stringify(recipes));
+      renderCookbook();
+      toast(`✅ Imported ${newOnes.length} new recipes`);
+    } catch {
+      toast('❌ Invalid backup file');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+function confirmClearAll() {
+  if (confirm('This will delete ALL your recipes and settings. Are you sure?')) {
+    localStorage.clear();
+    recipes = [];
+    renderCookbook();
+    toast('All data cleared');
+  }
+}
+
+// ── Close modal on overlay click ──
+document.getElementById('recipeModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ── Init ──
+renderCookbook();
+loadSettings();
+</script>
+
+</body>
+</html>
