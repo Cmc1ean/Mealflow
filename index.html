@@ -391,8 +391,52 @@
   .info-banner { background: var(--sage-pale); border: 1px solid var(--sage); border-radius: var(--radius-sm); padding: 12px 14px; font-size: 0.82rem; color: var(--ink); margin-bottom: 16px; line-height: 1.6; }
   .info-banner strong { color: var(--sage); }
 
-  /* ── Planner slots ── */
-  .plan-slot {
+  /* ── Planner picker list ── */
+  .picker-item {
+    background: var(--warm-white);
+    border-radius: var(--radius);
+    border: 1.5px solid var(--border);
+    box-shadow: var(--shadow);
+    margin-bottom: 8px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .picker-item.selected {
+    border-color: var(--terracotta);
+    background: var(--terracotta-pale);
+  }
+  .picker-item.at-limit {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .picker-check {
+    width: 24px; height: 24px;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    color: white;
+    transition: all 0.15s;
+  }
+  .picker-item.selected .picker-check {
+    background: var(--terracotta);
+    border-color: var(--terracotta);
+  }
+  .picker-item-info { flex: 1; min-width: 0; }
+  .picker-item-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .picker-item-meta { font-size: 0.75rem; color: var(--ink-light); margin-top: 2px; }
     background: var(--warm-white);
     border-radius: var(--radius);
     border: 1px solid var(--border);
@@ -590,23 +634,40 @@
     <!-- PLANNER -->
     <section id="planner" class="section">
       <h1 class="section-title">Weekly Planner</h1>
-      <p class="section-sub">Your meal plan for the week</p>
+      <p class="section-sub">Pick your meals for the week</p>
 
-      <div class="card" style="background:var(--ink); color:var(--cream); margin-bottom:16px;">
+      <!-- Controls bar -->
+      <div class="card" style="background:var(--ink); color:var(--cream); margin-bottom:14px;">
         <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
           <div>
-            <div style="font-family:'Playfair Display',serif; font-size:1.1rem; margin-bottom:2px;">Week of <span id="weekLabel"></span></div>
-            <div style="font-size:0.8rem; opacity:0.5;">Tap any recipe to swap it</div>
+            <div style="font-family:'Playfair Display',serif; font-size:1.05rem; margin-bottom:2px;">Week of <span id="weekLabel"></span></div>
+            <div style="font-size:0.78rem; opacity:0.5;" id="plannerSubLabel">Tick recipes below to add to this week</div>
           </div>
-          <button class="btn btn-secondary btn-sm" onclick="suggestPlan()" style="background:rgba(255,255,255,0.12); color:var(--cream); border:1px solid rgba(255,255,255,0.2);">🔀 Re-suggest</button>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <select id="recipeCountPicker" onchange="onRecipeCountChange()" style="background:rgba(255,255,255,0.12); color:var(--cream); border:1px solid rgba(255,255,255,0.25); border-radius:8px; padding:6px 10px; font-size:0.82rem; font-family:'DM Sans',sans-serif;">
+              <option value="2">2 meals</option>
+              <option value="3">3 meals</option>
+              <option value="4" selected>4 meals</option>
+              <option value="5">5 meals</option>
+              <option value="6">6 meals</option>
+              <option value="7">7 meals</option>
+            </select>
+            <button class="btn btn-secondary btn-sm" onclick="suggestPlan()" style="background:rgba(255,255,255,0.12); color:var(--cream); border:1px solid rgba(255,255,255,0.2); white-space:nowrap;">🔀 Random</button>
+          </div>
+        </div>
+        <!-- Selected count indicator -->
+        <div style="margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.1); font-size:0.82rem; display:flex; align-items:center; justify-content:space-between;">
+          <span style="opacity:0.6;"><span id="selectedCount">0</span> of <span id="targetCount">4</span> meals selected</span>
+          <button onclick="clearPlanSelections()" style="background:none; border:none; color:rgba(250,247,242,0.4); font-size:0.75rem; cursor:pointer; font-family:'DM Sans',sans-serif;">Clear all</button>
         </div>
       </div>
 
-      <div id="plannerSlots"></div>
+      <!-- Recipe picker list -->
+      <div id="plannerPickerList"></div>
 
-      <div id="plannerActions" style="display:none;">
-        <button class="btn btn-primary" onclick="approvePlan()" style="margin-bottom:10px;">✅ Approve Plan & Build Shopping List</button>
-        <button class="btn btn-ghost" onclick="suggestPlan()">🔀 Suggest Again</button>
+      <!-- Approve button -->
+      <div id="plannerActions" style="display:none; margin-top:4px;">
+        <button class="btn btn-primary" onclick="approvePlan()" style="margin-bottom:80px;">✅ Build Shopping List</button>
       </div>
     </section>
 
@@ -639,7 +700,7 @@
         <!-- Staples -->
         <div class="card">
           <h3 style="font-family:'Playfair Display',serif; font-size:1.1rem; margin-bottom:4px;">🏠 Check your cupboards</h3>
-          <p style="font-size:0.82rem; color:var(--ink-light); margin-bottom:14px;">These are likely already in stock — tick any you need to add to your order</p>
+          <p style="font-size:0.82rem; color:var(--ink-light); margin-bottom:14px;">Likely already in stock — tick any you need</p>
           <div id="stapleList"></div>
           <button class="btn btn-secondary" onclick="addStaplesToList()" style="margin-top:12px;">+ Add ticked staples to order</button>
         </div>
@@ -1472,10 +1533,10 @@ const STAPLES = [
   'sesame seeds','tomato puree'
 ];
 
-let weekPlan = []; // array of recipe ids
-let swappingSlot = null;
-let shoppingList = { buy: [], staples: [] };
+let weekPlan = []; // array of selected recipe ids
+let targetMealCount = 4;
 let approvedPlan = [];
+let shoppingList = { buy: [], staples: [] };
 
 function isStaple(name) {
   const n = name.toLowerCase();
@@ -1486,115 +1547,107 @@ function getWeekLabel() {
   const now = new Date();
   const day = now.getDay();
   const diff = now.getDate() - day + (day === 0 ? -6 : 1);
-  const monday = new Date(now.setDate(diff));
+  const monday = new Date(new Date().setDate(diff));
   return monday.toLocaleDateString('en-GB', { day:'numeric', month:'long' });
 }
 
 function initPlanner() {
   document.getElementById('weekLabel').textContent = getWeekLabel();
+  // Load saved state
   const saved = localStorage.getItem('mealflow_weekplan');
   if (saved) {
-    weekPlan = JSON.parse(saved);
-    // Validate saved IDs still exist
-    weekPlan = weekPlan.filter(id => recipes.find(r => r.id === id));
+    const parsed = JSON.parse(saved);
+    weekPlan = parsed.ids ? parsed.ids.filter(id => recipes.find(r => r.id === id)) : [];
+    targetMealCount = parsed.target || 4;
   }
-  if (weekPlan.length < 4) suggestPlan();
-  else renderPlannerSlots();
+  document.getElementById('recipeCountPicker').value = targetMealCount;
+  document.getElementById('targetCount').textContent = targetMealCount;
+  renderPickerList();
+}
+
+function onRecipeCountChange() {
+  targetMealCount = parseInt(document.getElementById('recipeCountPicker').value);
+  document.getElementById('targetCount').textContent = targetMealCount;
+  // Trim selection if over new limit
+  if (weekPlan.length > targetMealCount) weekPlan = weekPlan.slice(0, targetMealCount);
+  savePlanState();
+  renderPickerList();
+}
+
+function toggleRecipePick(id) {
+  if (weekPlan.includes(id)) {
+    weekPlan = weekPlan.filter(x => x !== id);
+  } else {
+    if (weekPlan.length >= targetMealCount) return; // at limit
+    weekPlan.push(id);
+  }
+  savePlanState();
+  renderPickerList();
+}
+
+function savePlanState() {
+  localStorage.setItem('mealflow_weekplan', JSON.stringify({ ids: weekPlan, target: targetMealCount }));
 }
 
 function suggestPlan() {
-  if (recipes.length === 0) {
-    toast('Add some recipes to your cookbook first');
-    return;
-  }
-  const recipesPerWeek = parseInt(localStorage.getItem('mealflow_per_week') || '4');
-  // Get recently cooked (last 3 weeks history)
+  if (recipes.length === 0) { toast('Add some recipes first'); return; }
   const history = JSON.parse(localStorage.getItem('mealflow_history') || '[]');
   const recentIds = new Set(history.slice(-12).map(h => h.id));
-  // Prefer not-recently-cooked
   let pool = recipes.filter(r => !recentIds.has(r.id));
-  if (pool.length < recipesPerWeek) pool = [...recipes]; // fallback if not enough
-  // Shuffle and pick
+  if (pool.length < targetMealCount) pool = [...recipes];
   pool = pool.sort(() => Math.random() - 0.5);
-  weekPlan = pool.slice(0, recipesPerWeek).map(r => r.id);
-  localStorage.setItem('mealflow_weekplan', JSON.stringify(weekPlan));
-  renderPlannerSlots();
+  weekPlan = pool.slice(0, targetMealCount).map(r => r.id);
+  savePlanState();
+  renderPickerList();
+  toast('🔀 Suggested ' + targetMealCount + ' recipes');
 }
 
-function renderPlannerSlots() {
-  const days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-  const slots = document.getElementById('plannerSlots');
-  const actions = document.getElementById('plannerActions');
+function clearPlanSelections() {
+  weekPlan = [];
+  savePlanState();
+  renderPickerList();
+}
 
-  if (weekPlan.length === 0) {
-    slots.innerHTML = '<div class="empty-state"><div class="icon">📅</div><h3>No plan yet</h3><p>Hit Re-suggest to generate this week\'s meals.</p></div>';
-    actions.style.display = 'none';
-    return;
-  }
+function renderPickerList() {
+  const count = weekPlan.length;
+  const atLimit = count >= targetMealCount;
+  document.getElementById('selectedCount').textContent = count;
+  document.getElementById('plannerActions').style.display = count > 0 ? 'block' : 'none';
 
-  slots.innerHTML = weekPlan.map((id, i) => {
-    const r = recipes.find(x => x.id === id);
-    if (!r) return '';
+  // Sort: selected first, then alphabetical
+  const sorted = [...recipes].sort((a, b) => {
+    const aSelected = weekPlan.includes(a.id);
+    const bSelected = weekPlan.includes(b.id);
+    if (aSelected && !bSelected) return -1;
+    if (!aSelected && bSelected) return 1;
+    return a.name.localeCompare(b.name);
+  });
+
+  document.getElementById('plannerPickerList').innerHTML = sorted.map(r => {
+    const selected = weekPlan.includes(r.id);
+    const disabled = !selected && atLimit;
     return `
-      <div class="plan-slot">
-        <div class="plan-slot-header">
-          <span class="plan-slot-day">${days[i] || `Meal ${i+1}`}</span>
-        </div>
-        <div class="plan-slot-body">
-          <div>
-            <div class="plan-slot-name">${r.name}</div>
-            <div class="plan-slot-meta">${r.cookTime ? `⏱ ${r.cookTime}` : ''} · 🍽 ${r.portions} portions</div>
-          </div>
-          <button class="swap-btn" onclick="openSwapPicker(${i})">⇄ Swap</button>
+      <div class="picker-item ${selected ? 'selected' : ''} ${disabled ? 'at-limit' : ''}"
+           onclick="${disabled ? '' : `toggleRecipePick('${r.id}')`}">
+        <div class="picker-check">${selected ? '✓' : ''}</div>
+        <div class="picker-item-info">
+          <div class="picker-item-name">${r.name}</div>
+          <div class="picker-item-meta">${r.cookTime ? `⏱ ${r.cookTime}` : ''} · 🍽 ${r.portions} portions${r.tags?.length ? ' · ' + r.tags.join(', ') : ''}</div>
         </div>
       </div>
     `;
   }).join('');
-
-  actions.style.display = 'block';
-}
-
-function openSwapPicker(slotIndex) {
-  swappingSlot = slotIndex;
-  const currentId = weekPlan[slotIndex];
-  const otherPlanIds = new Set(weekPlan.filter((_, i) => i !== slotIndex));
-  const options = recipes
-    .filter(r => r.id !== currentId)
-    .sort((a,b) => a.name.localeCompare(b.name));
-
-  document.getElementById('modalTitle').textContent = 'Choose a replacement';
-  document.getElementById('modalBody').innerHTML = `
-    <p style="font-size:0.85rem; color:var(--ink-light); margin-bottom:14px;">Select a recipe to replace <strong>${recipes.find(r=>r.id===currentId)?.name}</strong></p>
-    ${options.map(r => `
-      <div class="swap-option ${otherPlanIds.has(r.id) ? 'opacity:0.5' : ''}" onclick="confirmSwap('${r.id}')">
-        <div class="swap-option-name">${r.name} ${otherPlanIds.has(r.id) ? '<span style="font-size:0.72rem;color:var(--terracotta)">(already in plan)</span>' : ''}</div>
-        <div class="swap-option-meta">${r.cookTime ? `⏱ ${r.cookTime}` : ''} · 🍽 ${r.portions} portions</div>
-      </div>
-    `).join('')}
-  `;
-  document.getElementById('recipeModal').classList.add('open');
-}
-
-function confirmSwap(newId) {
-  if (swappingSlot === null) return;
-  weekPlan[swappingSlot] = newId;
-  localStorage.setItem('mealflow_weekplan', JSON.stringify(weekPlan));
-  swappingSlot = null;
-  closeModal();
-  renderPlannerSlots();
-  toast('✅ Recipe swapped');
 }
 
 function approvePlan() {
   if (weekPlan.length === 0) return;
   approvedPlan = weekPlan.map(id => recipes.find(r => r.id === id)).filter(Boolean);
-  // Save to history
   const history = JSON.parse(localStorage.getItem('mealflow_history') || '[]');
   approvedPlan.forEach(r => history.push({ id: r.id, date: Date.now() }));
   localStorage.setItem('mealflow_history', JSON.stringify(history));
   buildShoppingList(approvedPlan);
   showSection('shopping', document.querySelectorAll('.nav-tab')[3]);
-  toast('✅ Plan approved — shopping list ready!');
+  toast('✅ Shopping list ready!');
 }
 
 // ─────────────────────────────────────────
@@ -1670,24 +1723,23 @@ function renderShoppingList(planRecipes) {
   document.getElementById('shoppingEmpty').style.display = 'none';
   document.getElementById('shoppingContent').style.display = 'block';
 
-  // Recipe summary
   document.getElementById('shoppingRecipeList').innerHTML =
     (planRecipes || approvedPlan).map(r => `• ${r.name}`).join('<br>');
 
-  // Buy list grouped by category
+  // Buy list — grouped by category but NO subheading labels, just visual gap between groups
   const buyEl = document.getElementById('buyList');
   let currentCat = '';
   buyEl.innerHTML = shoppingList.buy.map(item => {
     let html = '';
     if (item.category !== currentCat) {
+      if (currentCat !== '') html += `<div style="height:6px;"></div>`; // gap between groups
       currentCat = item.category;
-      html += `<div class="shop-category">${currentCat}</div>`;
     }
     html += `<div class="shop-item"><span class="shop-item-name">${item.name}</span><span class="shop-item-qty">${item.display}</span></div>`;
     return html;
   }).join('');
 
-  // Staples list with checkboxes
+  // Staples
   document.getElementById('stapleList').innerHTML = shoppingList.staples.map((item, i) => `
     <div class="staple-item">
       <input type="checkbox" id="staple_${i}">
@@ -1696,21 +1748,13 @@ function renderShoppingList(planRecipes) {
     </div>
   `).join('');
 
-  // Plain text
   buildPlainText();
 }
 
 function buildPlainText() {
-  const lines = ['=== SHOPPING LIST ===\n'];
-  let currentCat = '';
-  shoppingList.buy.forEach(item => {
-    if (item.category !== currentCat) {
-      currentCat = item.category;
-      lines.push(`\n-- ${currentCat} --`);
-    }
-    lines.push(`${item.name} — ${item.display}`);
-  });
-  lines.push('\n-- CHECK CUPBOARDS --');
+  const lines = ['=== BUY THIS WEEK ==='];
+  shoppingList.buy.forEach(item => lines.push(`${item.name} — ${item.display}`));
+  lines.push('\n=== CHECK CUPBOARDS ===');
   shoppingList.staples.forEach(item => lines.push(`${item.name} — ${item.display}`));
   document.getElementById('plainTextList').value = lines.join('\n');
 }
