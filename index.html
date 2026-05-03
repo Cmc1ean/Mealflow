@@ -390,6 +390,54 @@
   /* ── Info banner ── */
   .info-banner { background: var(--sage-pale); border: 1px solid var(--sage); border-radius: var(--radius-sm); padding: 12px 14px; font-size: 0.82rem; color: var(--ink); margin-bottom: 16px; line-height: 1.6; }
   .info-banner strong { color: var(--sage); }
+
+  /* ── Planner slots ── */
+  .plan-slot {
+    background: var(--warm-white);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .plan-slot-header {
+    background: var(--terracotta-pale);
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .plan-slot-day { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--terracotta); }
+  .plan-slot-body { padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap:10px; }
+  .plan-slot-name { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 500; flex:1; }
+  .plan-slot-meta { font-size: 0.78rem; color: var(--ink-light); margin-top: 2px; }
+  .swap-btn { background: var(--cream); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; font-size: 0.78rem; cursor: pointer; color: var(--ink-light); white-space: nowrap; font-family: 'DM Sans', sans-serif; }
+  .swap-btn:hover { border-color: var(--terracotta); color: var(--terracotta); }
+
+  /* ── Swap picker modal ── */
+  .swap-option { padding: 12px 14px; border-bottom: 1px solid var(--border); cursor: pointer; border-radius: 8px; transition: background 0.15s; }
+  .swap-option:hover { background: var(--cream); }
+  .swap-option-name { font-family: 'Playfair Display', serif; font-size: 0.95rem; }
+  .swap-option-meta { font-size: 0.78rem; color: var(--ink-light); margin-top: 2px; }
+
+  /* ── Shopping list items ── */
+  .shop-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+  }
+  .shop-item:last-child { border-bottom: none; }
+  .shop-item-name { flex: 1; }
+  .shop-item-qty { font-weight: 600; color: var(--terracotta); font-size: 0.85rem; margin-left: 12px; white-space: nowrap; }
+  .shop-category { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-light); margin: 14px 0 6px; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
+  .staple-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+  .staple-item:last-child { border-bottom: none; }
+  .staple-item input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--terracotta); flex-shrink: 0; }
+  .staple-item label { flex: 1; cursor: pointer; }
+  .staple-item .shop-item-qty { font-weight: 600; color: var(--ink-light); font-size: 0.85rem; }
 </style>
 </head>
 <body>
@@ -445,6 +493,8 @@
   <nav>
     <button class="nav-tab active" onclick="showSection('cookbook', this)">📖 Cookbook</button>
     <button class="nav-tab" onclick="showSection('add', this)">✨ Add Recipe</button>
+    <button class="nav-tab" onclick="showSection('planner', this); initPlanner()">📅 Planner</button>
+    <button class="nav-tab" onclick="showSection('shopping', this)">🛒 Shopping</button>
     <button class="nav-tab" onclick="showSection('settings', this)">⚙️ Settings</button>
   </nav>
 
@@ -534,6 +584,75 @@
 
       <div id="manualFormToggle">
         <button class="btn btn-ghost" onclick="showManualForm()">✏️ Skip AI — fill in manually</button>
+      </div>
+    </section>
+
+    <!-- PLANNER -->
+    <section id="planner" class="section">
+      <h1 class="section-title">Weekly Planner</h1>
+      <p class="section-sub">Your meal plan for the week</p>
+
+      <div class="card" style="background:var(--ink); color:var(--cream); margin-bottom:16px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+          <div>
+            <div style="font-family:'Playfair Display',serif; font-size:1.1rem; margin-bottom:2px;">Week of <span id="weekLabel"></span></div>
+            <div style="font-size:0.8rem; opacity:0.5;">Tap any recipe to swap it</div>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="suggestPlan()" style="background:rgba(255,255,255,0.12); color:var(--cream); border:1px solid rgba(255,255,255,0.2);">🔀 Re-suggest</button>
+        </div>
+      </div>
+
+      <div id="plannerSlots"></div>
+
+      <div id="plannerActions" style="display:none;">
+        <button class="btn btn-primary" onclick="approvePlan()" style="margin-bottom:10px;">✅ Approve Plan & Build Shopping List</button>
+        <button class="btn btn-ghost" onclick="suggestPlan()">🔀 Suggest Again</button>
+      </div>
+    </section>
+
+    <!-- SHOPPING -->
+    <section id="shopping" class="section">
+      <h1 class="section-title">Shopping List</h1>
+      <p class="section-sub">Ready to send to Ocado</p>
+
+      <div id="shoppingEmpty" class="empty-state">
+        <div class="icon">🛒</div>
+        <h3>No shopping list yet</h3>
+        <p>Approve a meal plan in the <strong>Planner</strong> tab to generate your list.</p>
+      </div>
+
+      <div id="shoppingContent" style="display:none;">
+        <div class="card" style="background:var(--ink); color:var(--cream); margin-bottom:16px;">
+          <div style="font-family:'Playfair Display',serif; font-size:1rem; margin-bottom:4px;">This week's recipes</div>
+          <div id="shoppingRecipeList" style="font-size:0.82rem; opacity:0.6; line-height:1.8;"></div>
+        </div>
+
+        <!-- Fresh items -->
+        <div class="card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+            <h3 style="font-family:'Playfair Display',serif; font-size:1.1rem;">🛒 Buy this week</h3>
+            <button class="btn btn-secondary btn-sm" onclick="sendToOcado()">🛍 Send to Ocado</button>
+          </div>
+          <div id="buyList"></div>
+        </div>
+
+        <!-- Staples -->
+        <div class="card">
+          <h3 style="font-family:'Playfair Display',serif; font-size:1.1rem; margin-bottom:4px;">🏠 Check your cupboards</h3>
+          <p style="font-size:0.82rem; color:var(--ink-light); margin-bottom:14px;">These are likely already in stock — tick any you need to add to your order</p>
+          <div id="stapleList"></div>
+          <button class="btn btn-secondary" onclick="addStaplesToList()" style="margin-top:12px;">+ Add ticked staples to order</button>
+        </div>
+
+        <!-- Copy list -->
+        <div class="card">
+          <h3 style="font-weight:600; margin-bottom:8px; font-size:0.95rem;">📋 Plain text list</h3>
+          <p style="font-size:0.82rem; color:var(--ink-light); margin-bottom:10px;">Copy and paste into any shopping app</p>
+          <textarea id="plainTextList" rows="10" style="font-size:0.82rem; font-family:monospace;" readonly></textarea>
+          <button class="btn btn-ghost" onclick="copyList()" style="margin-top:8px;">📋 Copy to clipboard</button>
+        </div>
+
+        <button class="btn btn-danger btn-sm" onclick="clearShoppingList()" style="margin-bottom:80px; width:auto;">🗑 Clear list</button>
       </div>
     </section>
 
@@ -722,6 +841,7 @@ async function initApp() {
     renderHeader();
     renderCookbook();
     loadSettings();
+    loadSavedShoppingList();
     setSyncStatus('synced');
     updateDriveStatus();
   } catch(e) {
@@ -1339,6 +1459,310 @@ function importData(e) {
   };
   reader.readAsText(file);
   e.target.value = '';
+}
+
+// ─────────────────────────────────────────
+// PLANNER
+// ─────────────────────────────────────────
+const STAPLES = [
+  'frozen garlic','frozen ginger','olive oil','soy sauce',
+  'dried oregano','dried basil','dried thyme','dried herbs',
+  'ground nutmeg','ground cumin','smoked paprika','cornflour',
+  'clear honey','beef stock pot','chicken stock pot','stock pot',
+  'sesame seeds','tomato puree'
+];
+
+let weekPlan = []; // array of recipe ids
+let swappingSlot = null;
+let shoppingList = { buy: [], staples: [] };
+let approvedPlan = [];
+
+function isStaple(name) {
+  const n = name.toLowerCase();
+  return STAPLES.some(s => n.includes(s));
+}
+
+function getWeekLabel() {
+  const now = new Date();
+  const day = now.getDay();
+  const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+  const monday = new Date(now.setDate(diff));
+  return monday.toLocaleDateString('en-GB', { day:'numeric', month:'long' });
+}
+
+function initPlanner() {
+  document.getElementById('weekLabel').textContent = getWeekLabel();
+  const saved = localStorage.getItem('mealflow_weekplan');
+  if (saved) {
+    weekPlan = JSON.parse(saved);
+    // Validate saved IDs still exist
+    weekPlan = weekPlan.filter(id => recipes.find(r => r.id === id));
+  }
+  if (weekPlan.length < 4) suggestPlan();
+  else renderPlannerSlots();
+}
+
+function suggestPlan() {
+  if (recipes.length === 0) {
+    toast('Add some recipes to your cookbook first');
+    return;
+  }
+  const recipesPerWeek = parseInt(localStorage.getItem('mealflow_per_week') || '4');
+  // Get recently cooked (last 3 weeks history)
+  const history = JSON.parse(localStorage.getItem('mealflow_history') || '[]');
+  const recentIds = new Set(history.slice(-12).map(h => h.id));
+  // Prefer not-recently-cooked
+  let pool = recipes.filter(r => !recentIds.has(r.id));
+  if (pool.length < recipesPerWeek) pool = [...recipes]; // fallback if not enough
+  // Shuffle and pick
+  pool = pool.sort(() => Math.random() - 0.5);
+  weekPlan = pool.slice(0, recipesPerWeek).map(r => r.id);
+  localStorage.setItem('mealflow_weekplan', JSON.stringify(weekPlan));
+  renderPlannerSlots();
+}
+
+function renderPlannerSlots() {
+  const days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  const slots = document.getElementById('plannerSlots');
+  const actions = document.getElementById('plannerActions');
+
+  if (weekPlan.length === 0) {
+    slots.innerHTML = '<div class="empty-state"><div class="icon">📅</div><h3>No plan yet</h3><p>Hit Re-suggest to generate this week\'s meals.</p></div>';
+    actions.style.display = 'none';
+    return;
+  }
+
+  slots.innerHTML = weekPlan.map((id, i) => {
+    const r = recipes.find(x => x.id === id);
+    if (!r) return '';
+    return `
+      <div class="plan-slot">
+        <div class="plan-slot-header">
+          <span class="plan-slot-day">${days[i] || `Meal ${i+1}`}</span>
+        </div>
+        <div class="plan-slot-body">
+          <div>
+            <div class="plan-slot-name">${r.name}</div>
+            <div class="plan-slot-meta">${r.cookTime ? `⏱ ${r.cookTime}` : ''} · 🍽 ${r.portions} portions</div>
+          </div>
+          <button class="swap-btn" onclick="openSwapPicker(${i})">⇄ Swap</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  actions.style.display = 'block';
+}
+
+function openSwapPicker(slotIndex) {
+  swappingSlot = slotIndex;
+  const currentId = weekPlan[slotIndex];
+  const otherPlanIds = new Set(weekPlan.filter((_, i) => i !== slotIndex));
+  const options = recipes
+    .filter(r => r.id !== currentId)
+    .sort((a,b) => a.name.localeCompare(b.name));
+
+  document.getElementById('modalTitle').textContent = 'Choose a replacement';
+  document.getElementById('modalBody').innerHTML = `
+    <p style="font-size:0.85rem; color:var(--ink-light); margin-bottom:14px;">Select a recipe to replace <strong>${recipes.find(r=>r.id===currentId)?.name}</strong></p>
+    ${options.map(r => `
+      <div class="swap-option ${otherPlanIds.has(r.id) ? 'opacity:0.5' : ''}" onclick="confirmSwap('${r.id}')">
+        <div class="swap-option-name">${r.name} ${otherPlanIds.has(r.id) ? '<span style="font-size:0.72rem;color:var(--terracotta)">(already in plan)</span>' : ''}</div>
+        <div class="swap-option-meta">${r.cookTime ? `⏱ ${r.cookTime}` : ''} · 🍽 ${r.portions} portions</div>
+      </div>
+    `).join('')}
+  `;
+  document.getElementById('recipeModal').classList.add('open');
+}
+
+function confirmSwap(newId) {
+  if (swappingSlot === null) return;
+  weekPlan[swappingSlot] = newId;
+  localStorage.setItem('mealflow_weekplan', JSON.stringify(weekPlan));
+  swappingSlot = null;
+  closeModal();
+  renderPlannerSlots();
+  toast('✅ Recipe swapped');
+}
+
+function approvePlan() {
+  if (weekPlan.length === 0) return;
+  approvedPlan = weekPlan.map(id => recipes.find(r => r.id === id)).filter(Boolean);
+  // Save to history
+  const history = JSON.parse(localStorage.getItem('mealflow_history') || '[]');
+  approvedPlan.forEach(r => history.push({ id: r.id, date: Date.now() }));
+  localStorage.setItem('mealflow_history', JSON.stringify(history));
+  buildShoppingList(approvedPlan);
+  showSection('shopping', document.querySelectorAll('.nav-tab')[3]);
+  toast('✅ Plan approved — shopping list ready!');
+}
+
+// ─────────────────────────────────────────
+// SHOPPING LIST
+// ─────────────────────────────────────────
+function buildShoppingList(planRecipes) {
+  // Consolidate all ingredients
+  const consolidated = {};
+  planRecipes.forEach(recipe => {
+    (recipe.ingredients || []).forEach(ing => {
+      const key = ing.name.toLowerCase().trim();
+      if (!consolidated[key]) {
+        consolidated[key] = { name: ing.name, qty: 0, unit: ing.unit, isStaple: isStaple(ing.name) };
+      }
+      const qty = parseFloat(ing.qty) || 0;
+      // Handle non-numeric units (pots, sachets, pcs) — just count
+      if (ing.unit === 'pot' || ing.unit === 'sachet' || ing.unit === 'pcs') {
+        consolidated[key].qty += qty;
+        consolidated[key].unit = ing.unit;
+        consolidated[key].isCount = true;
+      } else {
+        consolidated[key].qty += qty;
+      }
+    });
+  });
+
+  // Categorise
+  const categories = {
+    'Meat & Fish': ['chicken','beef','turkey','mince','lardons','pancetta','bacon'],
+    'Dairy & Eggs': ['cheese','parmesan','feta','yoghurt','butter','cream','creme','milk'],
+    'Vegetables': ['broccoli','kale','spinach','carrot','celery','pepper','courgette','tomato','onion','cucumber','potato','bean','sweetcorn','lime'],
+    'Pasta, Rice & Grains': ['pasta','rice','spaghetti','linguine','rigatoni','noodle','grain','quinoa'],
+    'Tins & Jars': ['chopped plum','passata','chickpea','kidney','black bean','butter bean','cannellini','coconut'],
+    'Sauces & Condiments': ['sauce','honey','puree','mayo','peanut','gochujang'],
+    'Frozen': ['frozen'],
+  };
+
+  function getCategory(name) {
+    const n = name.toLowerCase();
+    for (const [cat, keywords] of Object.entries(categories)) {
+      if (keywords.some(k => n.includes(k))) return cat;
+    }
+    return 'Other';
+  }
+
+  const buyItems = [];
+  const stapleItems = [];
+
+  Object.values(consolidated).forEach(item => {
+    const formatted = {
+      ...item,
+      display: item.isCount
+        ? `${item.qty} ${item.unit}`
+        : item.qty >= 1000 && item.unit === 'g'
+          ? `${(item.qty/1000).toFixed(1).replace(/\.0$/,'')}kg`
+          : `${Math.round(item.qty)}${item.unit || 'g'}`,
+      category: getCategory(item.name)
+    };
+    if (item.isStaple) stapleItems.push(formatted);
+    else buyItems.push(formatted);
+  });
+
+  // Sort by category
+  buyItems.sort((a,b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name));
+  stapleItems.sort((a,b) => a.name.localeCompare(b.name));
+
+  shoppingList = { buy: buyItems, staples: stapleItems };
+  localStorage.setItem('mealflow_shopping', JSON.stringify({ list: shoppingList, recipes: planRecipes.map(r=>r.name) }));
+  renderShoppingList(planRecipes);
+}
+
+function renderShoppingList(planRecipes) {
+  document.getElementById('shoppingEmpty').style.display = 'none';
+  document.getElementById('shoppingContent').style.display = 'block';
+
+  // Recipe summary
+  document.getElementById('shoppingRecipeList').innerHTML =
+    (planRecipes || approvedPlan).map(r => `• ${r.name}`).join('<br>');
+
+  // Buy list grouped by category
+  const buyEl = document.getElementById('buyList');
+  let currentCat = '';
+  buyEl.innerHTML = shoppingList.buy.map(item => {
+    let html = '';
+    if (item.category !== currentCat) {
+      currentCat = item.category;
+      html += `<div class="shop-category">${currentCat}</div>`;
+    }
+    html += `<div class="shop-item"><span class="shop-item-name">${item.name}</span><span class="shop-item-qty">${item.display}</span></div>`;
+    return html;
+  }).join('');
+
+  // Staples list with checkboxes
+  document.getElementById('stapleList').innerHTML = shoppingList.staples.map((item, i) => `
+    <div class="staple-item">
+      <input type="checkbox" id="staple_${i}">
+      <label for="staple_${i}">${item.name}</label>
+      <span class="shop-item-qty">${item.display}</span>
+    </div>
+  `).join('');
+
+  // Plain text
+  buildPlainText();
+}
+
+function buildPlainText() {
+  const lines = ['=== SHOPPING LIST ===\n'];
+  let currentCat = '';
+  shoppingList.buy.forEach(item => {
+    if (item.category !== currentCat) {
+      currentCat = item.category;
+      lines.push(`\n-- ${currentCat} --`);
+    }
+    lines.push(`${item.name} — ${item.display}`);
+  });
+  lines.push('\n-- CHECK CUPBOARDS --');
+  shoppingList.staples.forEach(item => lines.push(`${item.name} — ${item.display}`));
+  document.getElementById('plainTextList').value = lines.join('\n');
+}
+
+function addStaplesToList() {
+  const checked = shoppingList.staples.filter((_, i) =>
+    document.getElementById(`staple_${i}`)?.checked
+  );
+  if (checked.length === 0) { toast('Tick some staples first'); return; }
+  shoppingList.buy = [...shoppingList.buy, ...checked.map(i => ({...i, isStaple: false}))];
+  shoppingList.staples = shoppingList.staples.filter((_, i) =>
+    !document.getElementById(`staple_${i}`)?.checked
+  );
+  renderShoppingList();
+  buildPlainText();
+  toast(`✅ Added ${checked.length} staples to your order`);
+}
+
+function copyList() {
+  const text = document.getElementById('plainTextList').value;
+  navigator.clipboard.writeText(text).then(() => toast('📋 Copied to clipboard!'));
+}
+
+function clearShoppingList() {
+  if (!confirm('Clear this shopping list?')) return;
+  shoppingList = { buy: [], staples: [] };
+  localStorage.removeItem('mealflow_shopping');
+  document.getElementById('shoppingEmpty').style.display = 'block';
+  document.getElementById('shoppingContent').style.display = 'none';
+  toast('🗑 Shopping list cleared');
+}
+
+function sendToOcado() {
+  // Build a list for the extension to read
+  const ocadoList = [...shoppingList.buy, ...shoppingList.staples.filter((_,i) =>
+    document.getElementById(`staple_${i}`)?.checked
+  )].map(item => ({ name: item.name, qty: item.display }));
+  localStorage.setItem('mealflow_ocado_list', JSON.stringify(ocadoList));
+  toast('🛍 List ready — open Ocado and activate the extension');
+}
+
+// Load saved shopping list on init
+function loadSavedShoppingList() {
+  const saved = localStorage.getItem('mealflow_shopping');
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      shoppingList = data.list;
+      approvedPlan = (data.recipes || []).map(name => ({ name }));
+      renderShoppingList();
+    } catch(e) {}
+  }
 }
 </script>
 </body>
