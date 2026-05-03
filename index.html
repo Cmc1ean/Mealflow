@@ -776,20 +776,17 @@ async function driveRequest(url, options = {}) {
 }
 
 async function findOrCreateDriveFile() {
-  // Step 1: Check localStorage for a known shared file ID
-  // (partner gets this ID after owner shares)
-  const storedFileId = localStorage.getItem('mealflow_drive_file_id');
-
-  // Step 2: Search for existing MealFlow folder
+  // Step 1: Find or create the MealFlow folder
   const folderSearch = await driveRequest(
     `https://www.googleapis.com/drive/v3/files?q=name='${FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false&fields=files(id,name)&spaces=drive`
   );
   const folderData = await folderSearch.json();
+  console.log('Folder search result:', folderData);
 
   if (folderData.files && folderData.files.length > 0) {
     driveFolderId = folderData.files[0].id;
+    console.log('Found existing folder:', driveFolderId);
   } else {
-    // Create the MealFlow folder
     const folderRes = await driveRequest('https://www.googleapis.com/drive/v3/files', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -800,51 +797,73 @@ async function findOrCreateDriveFile() {
     });
     const folder = await folderRes.json();
     driveFolderId = folder.id;
+    console.log('Created new folder:', driveFolderId);
   }
 
-  // Step 3: Search for the recipes file inside that folder
+  if (!driveFolderId) throw new Error('Could not find or create MealFlow folder');
+
+  // Step 2: Find or create the recipes file inside the folder
   const fileSearch = await driveRequest(
     `https://www.googleapis.com/drive/v3/files?q=name='${FILENAME}' and '${driveFolderId}' in parents and trashed=false&fields=files(id,name)&spaces=drive`
   );
   const fileData = await fileSearch.json();
+  console.log('File search result:', fileData);
 
   if (fileData.files && fileData.files.length > 0) {
     driveFileId = fileData.files[0].id;
-  } else if (storedFileId) {
-    // Use a shared file ID stored from partner sharing
-    driveFileId = storedFileId;
+    console.log('Found existing file:', driveFileId);
   } else {
-    // Create new file inside the folder
-    const createRes = await driveRequest('https://www.googleapis.com/drive/v3/files', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: FILENAME,
-        mimeType: 'application/json',
-        parents: [driveFolderId]
-      })
-    });
+    // Create the file with empty content in one multipart request
+    const boundary = '-------mealflow_boundary';
+    const body = [
+      `--${boundary}`,
+      'Content-Type: application/json; charset=UTF-8',
+      '',
+      JSON.stringify({ name: FILENAME, mimeType: 'application/json', parents: [driveFolderId] }),
+      `--${boundary}`,
+      'Content-Type: application/json',
+      '',
+      '[]',
+      `--${boundary}--`
+    ].join('\r\n');
+
+    const createRes = await driveRequest(
+      'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
+        body
+      }
+    );
     const newFile = await createRes.json();
+    console.log('Created new file:', newFile);
     driveFileId = newFile.id;
-    await uploadToDrive([]);
   }
 
-  // Store file ID for future sessions
+  if (!driveFileId) throw new Error('Could not find or create recipes file');
   localStorage.setItem('mealflow_drive_file_id', driveFileId);
 }
 
 async function loadFromDrive() {
-  if (!driveFileId) return;
+  if (!driveFileId) throw new Error('No file ID available');
   const res = await driveRequest(
     `https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`
   );
   const text = await res.text();
-  if (text && text.trim().startsWith('[')) {
-    recipes = JSON.parse(text);
-  } else if (text && text.trim().startsWith('{')) {
-    const data = JSON.parse(text);
-    recipes = data.recipes || [];
-  } else {
+  console.log('Raw Drive content:', text.slice(0, 100));
+  try {
+    if (!text || text.trim() === '') {
+      recipes = [];
+    } else if (text.trim().startsWith('[')) {
+      recipes = JSON.parse(text);
+    } else if (text.trim().startsWith('{')) {
+      const data = JSON.parse(text);
+      recipes = data.recipes || [];
+    } else {
+      recipes = [];
+    }
+  } catch(e) {
+    console.error('Parse error:', e);
     recipes = [];
   }
   localStorage.setItem('mealflow_recipes_local', JSON.stringify(recipes));
