@@ -391,6 +391,26 @@
   .info-banner { background: var(--sage-pale); border: 1px solid var(--sage); border-radius: var(--radius-sm); padding: 12px 14px; font-size: 0.82rem; color: var(--ink); margin-bottom: 16px; line-height: 1.6; }
   .info-banner strong { color: var(--sage); }
 
+  /* ── Add recipe method tabs ── */
+  .add-tab {
+    flex: 1;
+    background: none;
+    border: none;
+    border-radius: 6px;
+    padding: 9px 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--ink-light);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .add-tab.active {
+    background: var(--terracotta);
+    color: white;
+  }
+
   /* ── Planner picker list ── */
   .picker-item {
     background: var(--warm-white);
@@ -557,27 +577,68 @@
     <!-- ADD RECIPE -->
     <section id="add" class="section">
       <h1 class="section-title">Add Recipe</h1>
-      <p class="section-sub">Dictate or type — AI will structure it</p>
 
-      <div class="dictation-area">
-        <h3>🎙 Speak your recipe</h3>
-        <p>Hit record and describe it naturally — ingredients, steps, whatever comes to mind</p>
-        <div class="transcript-box placeholder" id="transcriptBox">Your words will appear here as you speak…</div>
-        <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
-          <button class="btn btn-record" id="recordBtn" onclick="toggleRecording()">🎙 Start Recording</button>
-          <button class="btn btn-secondary btn-sm" onclick="clearTranscript()" style="width:auto;">Clear</button>
-        </div>
-        <p style="font-size:0.75rem; color:rgba(250,247,242,0.45); margin-top:10px;">📱 iPhone tip: tap the mic on your keyboard as an alternative</p>
+      <!-- Method toggle -->
+      <div style="display:flex; gap:6px; margin-bottom:18px; background:var(--warm-white); border:1px solid var(--border); border-radius:var(--radius-sm); padding:4px;">
+        <button class="add-tab active" id="addTab_dictate" onclick="switchAddTab('dictate')">🎙 Dictate / AI</button>
+        <button class="add-tab" id="addTab_json" onclick="switchAddTab('json')">📋 Paste JSON</button>
+        <button class="add-tab" id="addTab_manual" onclick="switchAddTab('manual')">✏️ Manual</button>
       </div>
 
-      <div class="card">
-        <div class="form-group">
-          <label>Or type / paste your recipe description</label>
-          <textarea id="rawRecipeText" rows="4" placeholder="e.g. 'Make a big pot of chicken tikka masala — 4 chicken breasts, tin of tomatoes, onion, garlic, tikka paste, coconut milk…'"></textarea>
+      <!-- DICTATE TAB -->
+      <div id="addPane_dictate">
+        <p class="section-sub" style="margin-top:-10px;">Speak or type — Claude will structure it</p>
+        <div class="dictation-area">
+          <h3>🎙 Speak your recipe</h3>
+          <p>Hit record and describe it naturally — ingredients, steps, whatever comes to mind</p>
+          <div class="transcript-box placeholder" id="transcriptBox">Your words will appear here as you speak…</div>
+          <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+            <button class="btn btn-record" id="recordBtn" onclick="toggleRecording()">🎙 Start Recording</button>
+            <button class="btn btn-secondary btn-sm" onclick="clearTranscript()" style="width:auto;">Clear</button>
+          </div>
+          <p style="font-size:0.75rem; color:rgba(250,247,242,0.45); margin-top:10px;">📱 iPhone tip: tap the mic on your keyboard as an alternative</p>
         </div>
-        <button class="btn btn-primary" onclick="parseWithAI()" id="parseBtn">✨ Parse with AI</button>
+        <div class="card">
+          <div class="form-group">
+            <label>Or type / paste your recipe description</label>
+            <textarea id="rawRecipeText" rows="4" placeholder="e.g. 'Make a big pot of chicken tikka masala — 4 chicken breasts, tin of tomatoes, onion, garlic, tikka paste, coconut milk…'"></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="parseWithAI()" id="parseBtn">✨ Parse with AI</button>
+        </div>
       </div>
 
+      <!-- PASTE JSON TAB -->
+      <div id="addPane_json" style="display:none;">
+        <p class="section-sub" style="margin-top:-10px;">Paste Claude-generated JSON directly into the database</p>
+        <div class="card" style="background:var(--ink); color:var(--cream); margin-bottom:14px;">
+          <div style="font-size:0.82rem; opacity:0.7; line-height:1.7;">
+            In a separate Claude chat, paste your recipe and ask:<br>
+            <span style="font-family:monospace; background:rgba(255,255,255,0.08); padding:6px 10px; border-radius:6px; display:block; margin-top:8px; font-size:0.78rem; line-height:1.6;">"Convert this to MealFlow JSON format: {name, portions, cookTime, tags[], notes, ingredients:[{name,qty,unit}], method}. All weights in g or kg. Return JSON only."</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="form-group">
+            <label>Paste JSON here</label>
+            <textarea id="jsonPasteInput" rows="10" placeholder='{"name":"Chicken Tikka","portions":5,"cookTime":"45 min","tags":["high-protein"],"notes":"","ingredients":[{"name":"Chicken thighs","qty":"1000","unit":"g"}],"method":"Step 1...\nStep 2..."}' style="font-family:monospace; font-size:0.8rem;"></textarea>
+          </div>
+          <div id="jsonPreview" style="display:none; margin-bottom:14px;">
+            <div style="font-size:0.78rem; font-weight:600; color:var(--sage); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px;">✓ Preview</div>
+            <div id="jsonPreviewContent" style="background:var(--sage-pale); border:1px solid var(--sage); border-radius:var(--radius-sm); padding:12px; font-size:0.85rem; line-height:1.7;"></div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-secondary" onclick="previewJSON()" style="flex:1;">👁 Preview</button>
+            <button class="btn btn-primary" onclick="saveFromJSON()" style="flex:1;">💾 Save Recipe</button>
+          </div>
+          <div id="jsonError" style="display:none; margin-top:10px; padding:10px; background:#FDE8E8; border-radius:8px; font-size:0.82rem; color:#C0392B;"></div>
+        </div>
+      </div>
+
+      <!-- MANUAL TAB -->
+      <div id="addPane_manual" style="display:none;">
+        <p class="section-sub" style="margin-top:-10px;">Fill in the form directly</p>
+      </div>
+
+      <!-- Shared recipe form (used by Dictate AI parse + Manual tab) -->
       <div id="recipeForm" style="display:none;">
         <div class="card">
           <div class="form-group">
@@ -626,9 +687,6 @@
         <button class="btn btn-primary" onclick="saveRecipe()" style="margin-bottom:80px;">💾 Save to Cookbook</button>
       </div>
 
-      <div id="manualFormToggle">
-        <button class="btn btn-ghost" onclick="showManualForm()">✏️ Skip AI — fill in manually</button>
-      </div>
     </section>
 
     <!-- PLANNER -->
@@ -1269,8 +1327,88 @@ function getIngredients() {
 // ─────────────────────────────────────────
 function showManualForm() {
   document.getElementById('recipeForm').style.display = 'block';
-  document.getElementById('manualFormToggle').style.display = 'none';
   if (document.getElementById('ingredientRows').children.length === 0) addIngredientRow();
+}
+
+// ── Add Recipe tab switching ──
+function switchAddTab(tab) {
+  ['dictate','json','manual'].forEach(t => {
+    document.getElementById(`addPane_${t}`).style.display = t === tab ? 'block' : 'none';
+    document.getElementById(`addTab_${t}`).classList.toggle('active', t === tab);
+  });
+  if (tab === 'manual') showManualForm();
+}
+
+// ── JSON Paste ──
+function previewJSON() {
+  const raw = document.getElementById('jsonPasteInput').value.trim();
+  const errEl = document.getElementById('jsonError');
+  const previewEl = document.getElementById('jsonPreview');
+  errEl.style.display = 'none';
+  previewEl.style.display = 'none';
+  if (!raw) { showJSONError('Please paste some JSON first'); return; }
+  try {
+    const r = parseJSONInput(raw);
+    document.getElementById('jsonPreviewContent').innerHTML = `
+      <strong>${r.name}</strong><br>
+      🍽 ${r.portions || '?'} portions · ⏱ ${r.cookTime || '?'}<br>
+      ${r.tags?.length ? '🏷 ' + r.tags.join(', ') + '<br>' : ''}
+      <br><strong>${(r.ingredients||[]).length} ingredients:</strong><br>
+      ${(r.ingredients||[]).map(i => `${i.name} — ${i.qty}${i.unit}`).join('<br>')}
+      ${r.method ? `<br><br><strong>Method:</strong><br>${r.method.slice(0,200)}${r.method.length > 200 ? '…' : ''}` : ''}
+    `;
+    previewEl.style.display = 'block';
+  } catch(e) {
+    showJSONError('Invalid JSON: ' + e.message + '. Make sure Claude returned only the JSON object with no extra text.');
+  }
+}
+
+function parseJSONInput(raw) {
+  const cleaned = raw.replace(/^```json?\s*/i, '').replace(/```\s*$/,'').trim();
+  const parsed = JSON.parse(cleaned);
+  if (!parsed.name) throw new Error('"name" field is required');
+  if (!parsed.ingredients) throw new Error('"ingredients" array is required');
+  return parsed;
+}
+
+async function saveFromJSON() {
+  const raw = document.getElementById('jsonPasteInput').value.trim();
+  const errEl = document.getElementById('jsonError');
+  errEl.style.display = 'none';
+  if (!raw) { showJSONError('Please paste some JSON first'); return; }
+  try {
+    const r = parseJSONInput(raw);
+    const recipe = {
+      id: Date.now().toString(),
+      name: r.name,
+      portions: parseInt(r.portions) || 5,
+      cookTime: r.cookTime || '',
+      tags: Array.isArray(r.tags) ? r.tags : [],
+      notes: r.notes || '',
+      ingredients: (r.ingredients || []).map(i => ({
+        name: String(i.name || '').trim(),
+        qty: String(i.qty || ''),
+        unit: String(i.unit || 'g').trim()
+      })).filter(i => i.name),
+      method: r.method || '',
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+    recipes.push(recipe);
+    scheduleSave();
+    document.getElementById('jsonPasteInput').value = '';
+    document.getElementById('jsonPreview').style.display = 'none';
+    toast(`✅ "${recipe.name}" saved!`);
+    showSection('cookbook', document.querySelectorAll('.nav-tab')[0]);
+  } catch(e) {
+    showJSONError('Could not save: ' + e.message);
+  }
+}
+
+function showJSONError(msg) {
+  const el = document.getElementById('jsonError');
+  el.textContent = '⚠ ' + msg;
+  el.style.display = 'block';
 }
 
 // ─────────────────────────────────────────
