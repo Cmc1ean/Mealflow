@@ -612,8 +612,9 @@
 // ─────────────────────────────────────────
 const CLIENT_ID = '560711803817-iromht826gc7g901d8d5uno2qe5bbuba.apps.googleusercontent.com';
 const API_KEY = 'AIzaSyAgKipTdXYZd_GDG1yg2DIDSG-3p7cifk4';
-const SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
+const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 const FILENAME = 'mealflow-recipes.json';
+const FOLDER_NAME = 'MealFlow';
 
 // ─────────────────────────────────────────
 // STATE
@@ -625,6 +626,7 @@ let isRecording = false;
 let currentPortions = 5;
 let accessToken = null;
 let driveFileId = null;
+let driveFolderId = null;
 let currentUser = null;
 let saveTimeout = null;
 
@@ -753,10 +755,8 @@ function renderHeader() {
 }
 
 // ─────────────────────────────────────────
-// GOOGLE DRIVE — App Data folder (private per user)
-// We use a shared file approach via Drive appDataFolder
-// Both users store in their own Drive but we use a shared file ID approach
-// For true sharing, we store the file in a shared folder
+// GOOGLE DRIVE — Visible shared folder approach
+// Creates a MealFlow folder in Drive, visible and shareable
 // ─────────────────────────────────────────
 async function driveRequest(url, options = {}) {
   const res = await fetch(url, {
@@ -776,29 +776,61 @@ async function driveRequest(url, options = {}) {
 }
 
 async function findOrCreateDriveFile() {
-  // Search for existing file in root
-  const searchRes = await driveRequest(
-    `https://www.googleapis.com/drive/v3/files?q=name='${FILENAME}' and trashed=false&fields=files(id,name,owners,sharingUser)&spaces=drive`
-  );
-  const searchData = await searchRes.json();
+  // Step 1: Check localStorage for a known shared file ID
+  // (partner gets this ID after owner shares)
+  const storedFileId = localStorage.getItem('mealflow_drive_file_id');
 
-  if (searchData.files && searchData.files.length > 0) {
-    driveFileId = searchData.files[0].id;
-    return;
+  // Step 2: Search for existing MealFlow folder
+  const folderSearch = await driveRequest(
+    `https://www.googleapis.com/drive/v3/files?q=name='${FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false&fields=files(id,name)&spaces=drive`
+  );
+  const folderData = await folderSearch.json();
+
+  if (folderData.files && folderData.files.length > 0) {
+    driveFolderId = folderData.files[0].id;
+  } else {
+    // Create the MealFlow folder
+    const folderRes = await driveRequest('https://www.googleapis.com/drive/v3/files', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: FOLDER_NAME,
+        mimeType: 'application/vnd.google-apps.folder'
+      })
+    });
+    const folder = await folderRes.json();
+    driveFolderId = folder.id;
   }
 
-  // Create new file
-  const meta = { name: FILENAME, mimeType: 'application/json' };
-  const metaRes = await driveRequest('https://www.googleapis.com/drive/v3/files', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(meta)
-  });
-  const fileData = await metaRes.json();
-  driveFileId = fileData.id;
+  // Step 3: Search for the recipes file inside that folder
+  const fileSearch = await driveRequest(
+    `https://www.googleapis.com/drive/v3/files?q=name='${FILENAME}' and '${driveFolderId}' in parents and trashed=false&fields=files(id,name)&spaces=drive`
+  );
+  const fileData = await fileSearch.json();
 
-  // Upload initial empty content
-  await uploadToDrive([]);
+  if (fileData.files && fileData.files.length > 0) {
+    driveFileId = fileData.files[0].id;
+  } else if (storedFileId) {
+    // Use a shared file ID stored from partner sharing
+    driveFileId = storedFileId;
+  } else {
+    // Create new file inside the folder
+    const createRes = await driveRequest('https://www.googleapis.com/drive/v3/files', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: FILENAME,
+        mimeType: 'application/json',
+        parents: [driveFolderId]
+      })
+    });
+    const newFile = await createRes.json();
+    driveFileId = newFile.id;
+    await uploadToDrive([]);
+  }
+
+  // Store file ID for future sessions
+  localStorage.setItem('mealflow_drive_file_id', driveFileId);
 }
 
 async function loadFromDrive() {
@@ -858,8 +890,20 @@ function setSyncStatus(status) {
 
 function updateDriveStatus() {
   const el = document.getElementById('driveStatus');
-  if (driveFileId) {
-    el.textContent = `✓ Connected — File ID: ${driveFileId.slice(0,12)}…`;
+  if (driveFolderId) {
+    const folderUrl = `https://drive.google.com/drive/folders/${driveFolderId}`;
+    el.innerHTML = `
+      ✓ Connected to <strong>MealFlow</strong> folder in your Drive<br>
+      <a href="${folderUrl}" target="_blank" style="color:var(--terracotta); font-size:0.82rem;">📂 Open folder in Drive</a>
+      <div style="margin-top:10px; padding:10px; background:var(--terracotta-pale); border-radius:8px; font-size:0.82rem; color:var(--ink);">
+        <strong>To share with your partner:</strong><br>
+        1. Open the folder link above<br>
+        2. Right-click the folder → Share<br>
+        3. Add your partner's Gmail → set to <em>Editor</em><br>
+        4. She signs in to MealFlow — recipes sync automatically
+      </div>
+    `;
+    el.style.color = 'inherit';
   } else {
     el.textContent = '⚠ Not connected';
     el.style.color = '#E74C3C';
