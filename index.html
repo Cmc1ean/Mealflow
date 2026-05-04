@@ -613,7 +613,7 @@
         <div class="card" style="background:var(--ink); color:var(--cream); margin-bottom:14px;">
           <div style="font-size:0.82rem; opacity:0.7; line-height:1.7;">
             In a separate Claude chat, paste your recipe and ask:<br>
-            <span style="font-family:monospace; background:rgba(255,255,255,0.08); padding:6px 10px; border-radius:6px; display:block; margin-top:8px; font-size:0.78rem; line-height:1.6;">"Convert this to MealFlow JSON format: {name, portions, cookTime, tags[], notes, ingredients:[{name,qty,unit}], method}. All weights in g or kg. Return JSON only."</span>
+            <span style="font-family:monospace; background:rgba(255,255,255,0.08); padding:6px 10px; border-radius:6px; display:block; margin-top:8px; font-size:0.78rem; line-height:1.6;">"Convert this recipe to JSON format: {name, portions, cookTime, tags[], notes, ingredients:[{name,qty,unit}], method}. All weights in g or kg. Ingredient names should be ocado-friendly where possible, and not include any brand names. Tags should include the main protein, and type of dish. Return JSON only."</span>
           </div>
         </div>
         <div class="card">
