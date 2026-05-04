@@ -333,21 +333,20 @@ textarea{resize:vertical;min-height:80px}
           </div>
           <div style="display:flex;gap:8px;align-items:center">
             <select id="recipeCountPicker" onchange="onRecipeCountChange()" style="background:rgba(255,255,255,.12);color:var(--cream);border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 10px;font-size:.82rem;font-family:'DM Sans',sans-serif">
-              <option value="2">2 meals</option><option value="3">3 meals</option><option value="4" selected>4 meals</option>
+              <option value="1">1 meal</option><option value="2">2 meals</option><option value="3">3 meals</option><option value="4" selected>4 meals</option>
               <option value="5">5 meals</option><option value="6">6 meals</option><option value="7">7 meals</option>
             </select>
             <button class="btn btn-sm" onclick="suggestPlan()" style="background:rgba(255,255,255,.12);color:var(--cream);border:1px solid rgba(255,255,255,.2);white-space:nowrap">🔀 Random</button>
           </div>
         </div>
-        <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.1);font-size:.82rem;display:flex;align-items:center;justify-content:space-between">
-          <span style="opacity:.6"><span id="selectedCount">0</span> of <span id="targetCount">4</span> selected</span>
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.1);font-size:.82rem;display:flex;align-items:center;justify-content:flex-end">
           <button onclick="clearPlanSelections()" style="background:none;border:none;color:rgba(250,247,242,.4);font-size:.75rem;cursor:pointer;font-family:'DM Sans',sans-serif">Clear all</button>
         </div>
       </div>
-      <div id="plannerPickerList"></div>
-      <div id="plannerActions" style="display:none;margin-top:4px">
-        <button class="btn btn-primary" onclick="approvePlan()" style="margin-bottom:80px">✅ Build Shopping List</button>
+      <div id="plannerActions" style="margin-bottom:12px">
+        <button class="btn btn-primary" onclick="approvePlan()">✅ Build Shopping List</button>
       </div>
+      <div id="plannerPickerList"></div>
     </section>
 
     <!-- SHOPPING -->
@@ -421,7 +420,7 @@ textarea{resize:vertical;min-height:80px}
       </div>
       <div class="card">
         <h4 style="font-weight:600;margin-bottom:6px">About</h4>
-        <p class="text-muted">MealFlow v6 · Built with Claude</p>
+        <p class="text-muted">MealFlow v7 · Built with Claude</p>
       </div>
     </section>
   </main>
@@ -575,11 +574,13 @@ function toast(msg,d=2500){const e=document.getElementById('toast');e.textConten
 function renderCookbook(){
   const q=(document.getElementById('searchInput')?.value||'').toLowerCase();
   const f=recipes.filter(r=>r.name.toLowerCase().includes(q)||(r.tags||[]).some(t=>t.toLowerCase().includes(q)));
+  f.sort((a,b)=>a.name.localeCompare(b.name));
   document.getElementById('recipeCount').textContent=recipes.length;
   const el=document.getElementById('recipeList');
   if(!recipes.length){el.innerHTML='<div class="empty-state"><div class="icon">📖</div><h3>Your cookbook is empty</h3><p>Add your first recipe using the <strong>Add</strong> tab.</p></div>';return;}
   if(!f.length){el.innerHTML='<div class="empty-state"><div class="icon">🔍</div><h3>No matches</h3><p>Try a different search term.</p></div>';return;}
-  el.innerHTML=f.map(r=>`<div class="recipe-card" onclick="openRecipe('${r.id}')"><div class="recipe-card-body"><div class="recipe-name">${r.name}</div><div class="recipe-meta" style="margin:5px 0 8px">${r.cookTime?`⏱ ${r.cookTime}`:''}${r.portions?`· 🍽 ${r.portions} portions`:''}</div><div>${(r.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('')}</div></div></div>`).join('');
+  el.innerHTML=f.map(r=>`<div class="recipe-card" data-recipe-id="${r.id}"><div class="recipe-card-body"><div class="recipe-name">${r.name}</div><div class="recipe-meta" style="margin:5px 0 8px">${r.cookTime?`⏱ ${r.cookTime}`:''}${r.portions?`· 🍽 ${r.portions} portions`:''}</div><div>${(r.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('')}</div></div></div>`).join('');
+  el.querySelectorAll('.recipe-card[data-recipe-id]').forEach(card=>{card.addEventListener('click',()=>openRecipe(card.dataset.recipeId));});
 }
 
 // ── RECIPE MODAL ──
@@ -712,18 +713,18 @@ function initPlanner(){
   document.getElementById('weekLabel').textContent=getWeekLabel();
   const s=localStorage.getItem('mealflow_weekplan');
   if(s){const p=JSON.parse(s);weekPlan=p.ids?p.ids.filter(id=>recipes.find(r=>r.id===id)):[];targetMealCount=p.target||4;}
-  document.getElementById('recipeCountPicker').value=targetMealCount;document.getElementById('targetCount').textContent=targetMealCount;renderPickerList();
+  document.getElementById('recipeCountPicker').value=targetMealCount;renderPickerList();
 }
-function onRecipeCountChange(){targetMealCount=parseInt(document.getElementById('recipeCountPicker').value);document.getElementById('targetCount').textContent=targetMealCount;if(weekPlan.length>targetMealCount)weekPlan=weekPlan.slice(0,targetMealCount);savePlanState();renderPickerList();}
-function toggleRecipePick(id){if(weekPlan.includes(id)){weekPlan=weekPlan.filter(x=>x!==id);}else{if(weekPlan.length>=targetMealCount)return;weekPlan.push(id);}savePlanState();renderPickerList();}
+function onRecipeCountChange(){targetMealCount=parseInt(document.getElementById('recipeCountPicker').value);savePlanState();}
+function toggleRecipePick(id){if(weekPlan.includes(id)){weekPlan=weekPlan.filter(x=>x!==id);}else{weekPlan.push(id);}savePlanState();renderPickerList();}
 const savePlanState=()=>localStorage.setItem('mealflow_weekplan',JSON.stringify({ids:weekPlan,target:targetMealCount}));
 function suggestPlan(){if(!recipes.length){toast('Add some recipes first');return;}const hist=JSON.parse(localStorage.getItem('mealflow_history')||'[]');const rec=new Set(hist.slice(-12).map(h=>h.id));let pool=recipes.filter(r=>!rec.has(r.id));if(pool.length<targetMealCount)pool=[...recipes];weekPlan=pool.sort(()=>Math.random()-.5).slice(0,targetMealCount).map(r=>r.id);savePlanState();renderPickerList();toast('🔀 Suggested '+targetMealCount+' recipes');}
 function clearPlanSelections(){weekPlan=[];savePlanState();renderPickerList();}
 function renderPickerList(){
-  const count=weekPlan.length,atLimit=count>=targetMealCount;
-  document.getElementById('selectedCount').textContent=count;document.getElementById('plannerActions').style.display=count>0?'block':'none';
   const sorted=[...recipes].sort((a,b)=>{const as=weekPlan.includes(a.id),bs=weekPlan.includes(b.id);return as&&!bs?-1:!as&&bs?1:a.name.localeCompare(b.name);});
-  document.getElementById('plannerPickerList').innerHTML=sorted.map(r=>{const sel=weekPlan.includes(r.id),dis=!sel&&atLimit;return`<div class="picker-item ${sel?'selected':''} ${dis?'at-limit':''}" onclick="${dis?'':` toggleRecipePick('${r.id}')`}"><div class="picker-check">${sel?'✓':''}</div><div class="picker-item-info"><div class="picker-item-name">${r.name}</div><div class="picker-item-meta">${r.cookTime?`⏱ ${r.cookTime}`:''} · 🍽 ${r.portions} portions${r.tags?.length?' · '+r.tags.join(', '):''}</div></div></div>`;}).join('');
+  const el=document.getElementById('plannerPickerList');
+  el.innerHTML=sorted.map(r=>{const sel=weekPlan.includes(r.id);return`<div class="picker-item ${sel?'selected':''}" data-pick-id="${r.id}"><div class="picker-check">${sel?'✓':''}</div><div class="picker-item-info"><div class="picker-item-name">${r.name}</div><div class="picker-item-meta">${r.cookTime?`⏱ ${r.cookTime}`:''} · 🍽 ${r.portions} portions${r.tags?.length?' · '+r.tags.join(', '):''}</div></div></div>`;}).join('');
+  el.querySelectorAll('.picker-item[data-pick-id]').forEach(item=>{item.addEventListener('click',()=>toggleRecipePick(item.dataset.pickId));});
 }
 function approvePlan(){
   if(!weekPlan.length)return;approvedPlan=weekPlan.map(id=>recipes.find(r=>r.id===id)).filter(Boolean);
