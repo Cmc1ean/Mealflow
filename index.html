@@ -592,15 +592,21 @@ function openRecipe(id){
 function renderModalBody(r){
   const scale=currentPortions/(r.portions||5);
   const ings=(r.ingredients||[]).map(i=>{const s=i.qty?(parseFloat(i.qty)*scale).toFixed(scale!==1?1:0).replace(/\.0$/,''):'';return`<li><span>${i.name}</span><span class="ing-amount">${s} ${i.unit||''}</span></li>`;}).join('');
-  const steps=r.method?r.method.split(/\n+/).filter(Boolean).map(s=>`<li>${s}</li>`).join(''):'<li>No steps recorded.</li>';
-  document.getElementById('modalBody').innerHTML=`
-    <div class="portion-scaler"><label style="margin:0">🍽 Portions</label><div class="scaler-controls"><button class="scaler-btn" onclick="adjustPortions('${r.id}',-1)">−</button><span class="scaler-count" id="portionCount">${currentPortions}</span><button class="scaler-btn" onclick="adjustPortions('${r.id}',1)">+</button></div></div>
+  const methodSteps=Array.isArray(r.method)?r.method.filter(Boolean):(r.method?r.method.split(/\n+/).filter(Boolean):[]);
+  const steps=methodSteps.length?methodSteps.map(s=>`<li>${s}</li>`).join(''):'<li>No steps recorded.</li>';
+  const body=document.getElementById('modalBody');
+  body.innerHTML=`
+    <div class="portion-scaler"><label style="margin:0">🍽 Portions</label><div class="scaler-controls"><button class="scaler-btn" id="portionDown">−</button><span class="scaler-count" id="portionCount">${currentPortions}</span><button class="scaler-btn" id="portionUp">+</button></div></div>
     ${r.tags?.length?`<div style="margin-bottom:14px">${r.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>`:''}
     ${r.notes?`<p class="text-muted" style="margin-bottom:14px">📎 ${r.notes}</p>`:''}
     <div class="recipe-detail-section"><h4>Ingredients</h4><ul class="ingredient-list">${ings||'<li>None recorded</li>'}</ul></div>
     <div class="recipe-detail-section"><h4>Method</h4><ol class="steps-list">${steps}</ol></div>
     <hr class="divider">
-    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-secondary btn-sm" onclick="editRecipe('${r.id}')">✏️ Edit</button><button class="btn btn-danger btn-sm" onclick="deleteRecipe('${r.id}')">🗑 Delete</button></div>`;
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-secondary btn-sm" id="modalEditBtn">✏️ Edit</button><button class="btn btn-danger btn-sm" id="modalDeleteBtn">🗑 Delete</button></div>`;
+  body.querySelector('#portionDown').addEventListener('click',()=>adjustPortions(r.id,-1));
+  body.querySelector('#portionUp').addEventListener('click',()=>adjustPortions(r.id,1));
+  body.querySelector('#modalEditBtn').addEventListener('click',()=>editRecipe(r.id));
+  body.querySelector('#modalDeleteBtn').addEventListener('click',()=>deleteRecipe(r.id));
 }
 function adjustPortions(id,d){currentPortions=Math.max(1,currentPortions+d);document.getElementById('portionCount').textContent=currentPortions;const r=recipes.find(x=>x.id===id);if(r)renderModalBody(r);}
 const closeModal=()=>document.getElementById('recipeModal').classList.remove('open');
