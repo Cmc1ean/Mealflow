@@ -268,14 +268,24 @@ textarea{resize:vertical;min-height:80px}
         <div class="card" style="background:var(--ink);color:var(--cream);margin-bottom:14px">
           <div style="font-size:.82rem;opacity:.7;line-height:1.7">
             In a separate Claude chat, paste your recipe and send this prompt:<br>
-            <span id="jsonPromptText" style="font-family:monospace;background:rgba(255,255,255,.08);padding:8px 10px;border-radius:6px;display:block;margin-top:8px;font-size:.76rem;line-height:1.7;user-select:all">Convert this recipe to JSON format: {name, portions, cookTime, tags[], notes, ingredients:[{name,qty,unit}], method}. All weights in g or kg. Ingredient names should be ocado-friendly where possible, and not include any brand names. Tags should include the main protein, and type of dish. Return JSON only.</span>
+            <span id="jsonPromptText" style="font-family:monospace;background:rgba(255,255,255,.08);padding:8px 10px;border-radius:6px;display:block;margin-top:8px;font-size:.76rem;line-height:1.7;user-select:all">Convert this recipe to JSON. Return JSON only, no markdown.
+
+{"name":"","portions":4,"cookTime":"X min","tags":["protein","dish-type"],"notes":"","ingredients":[{"name":"","qty":"","unit":""}],"method":"Step 1.\nStep 2."}
+
+Rules:
+- Weights in g only (never kg). Liquids in ml only (never l). Count items use "pcs". Stock/sachets use "pot" or "sachet"
+- Ingredient names: Title Case, simplest Ocado-friendly form, no brand names
+- Standardise: "Chicken Thighs" not "chicken thigh fillets", "Chopped Plum Tomatoes" not "tinned tomatoes"
+- qty as a number e.g. 400 not "400"
+- tags: lowercase, first = protein, second = dish type
+- method: single string, steps separated by \n</span>
             <button onclick="copyPrompt()" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:var(--cream);border-radius:6px;padding:6px 12px;font-size:.75rem;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:8px">📋 Copy prompt</button>
           </div>
         </div>
         <div class="card">
           <div class="form-group">
             <label>Paste JSON here</label>
-            <textarea id="jsonPasteInput" rows="10" placeholder='{"name":"Chicken Tikka","portions":5,"cookTime":"45 min","tags":["chicken","curry"],"notes":"","ingredients":[{"name":"Chicken thighs","qty":"1000","unit":"g"}],"method":"Step 1...\nStep 2..."}' style="font-family:monospace;font-size:.8rem"></textarea>
+            <textarea id="jsonPasteInput" rows="10" placeholder='{"name":"Chicken Tikka","portions":5,"cookTime":"45 min","tags":["chicken","curry"],"notes":"","ingredients":[{"name":"Chicken Thighs","qty":1000,"unit":"g"}],"method":"Step 1...\nStep 2..."}' style="font-family:monospace;font-size:.8rem"></textarea>
           </div>
           <div id="jsonPreview" style="display:none;margin-bottom:14px">
             <div style="font-size:.78rem;font-weight:600;color:var(--sage);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">✓ Preview</div>
@@ -304,7 +314,7 @@ textarea{resize:vertical;min-height:80px}
           <div class="form-group"><label>Notes / Source URL</label><input type="text" id="recipeNotes" placeholder="e.g. source URL or inspiration"></div>
         </div>
         <div class="card">
-          <label style="margin-bottom:12px;display:block">Ingredients (g/kg)</label>
+          <label style="margin-bottom:12px;display:block">Ingredients</label>
           <div style="display:grid;grid-template-columns:2fr 1fr 1.5fr 36px;gap:6px;margin-bottom:6px">
             <span style="font-size:.72rem;color:var(--il);text-transform:uppercase">Item</span>
             <span style="font-size:.72rem;color:var(--il);text-transform:uppercase">Qty</span>
@@ -591,7 +601,7 @@ function openRecipe(id){
 }
 function renderModalBody(r){
   const scale=currentPortions/(r.portions||5);
-  const ings=(r.ingredients||[]).map(i=>{const s=i.qty?(parseFloat(i.qty)*scale).toFixed(scale!==1?1:0).replace(/\.0$/,''):'';return`<li><span>${i.name}</span><span class="ing-amount">${s} ${i.unit||''}</span></li>`;}).join('');
+  const ings=(r.ingredients||[]).map(i=>{const s=i.qty?Math.round(parseFloat(i.qty)*scale).toString():'';return`<li><span>${i.name}</span><span class="ing-amount">${s} ${i.unit||''}</span></li>`;}).join('');
   const methodSteps=Array.isArray(r.method)?r.method.filter(Boolean):(r.method?r.method.split(/\n+/).filter(Boolean):[]);
   const steps=methodSteps.length?methodSteps.map(s=>`<li>${s}</li>`).join(''):'<li>No steps recorded.</li>';
   const body=document.getElementById('modalBody');
@@ -615,10 +625,12 @@ document.getElementById('recipeModal').addEventListener('click',function(e){if(e
 // ── INGREDIENT ROWS ──
 function addIngredientRow(name='',qty='',unit=''){
   const row=document.createElement('div');row.className='ingredient-row';
-  row.innerHTML=`<input type="text" placeholder="e.g. chicken thighs" value="${name}"><input type="text" placeholder="400" value="${qty}"><input type="text" placeholder="g / kg" value="${unit}"><button class="remove-btn" onclick="this.parentElement.remove()">×</button>`;
+  const opts=["g","ml","pcs","pot","sachet"];
+  const selHtml=opts.map(o=>`<option value="${o}"${o===unit||(!unit&&o==="g")?" selected":""}>${o}</option>`).join("");
+  row.innerHTML=`<input type="text" placeholder="e.g. Chicken Thighs" value="${name}"><input type="text" placeholder="400" value="${qty}"><select style="padding:10px 8px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:.9rem;background:var(--ww);color:var(--ink)">${selHtml}</select><button class="remove-btn" onclick="this.parentElement.remove()">×</button>`;
   document.getElementById('ingredientRows').appendChild(row);
 }
-const getIngredients=()=>Array.from(document.querySelectorAll('#ingredientRows .ingredient-row')).map(row=>{const i=row.querySelectorAll('input');return{name:i[0].value.trim(),qty:i[1].value.trim(),unit:i[2].value.trim()};}).filter(i=>i.name);
+const getIngredients=()=>Array.from(document.querySelectorAll('#ingredientRows .ingredient-row')).map(row=>{const inputs=row.querySelectorAll('input');const sel=row.querySelector('select');return{name:inputs[0].value.trim(),qty:inputs[1].value.trim(),unit:sel?sel.value:'g'};}).filter(i=>i.name);
 
 // ── ADD TABS ──
 function switchAddTab(tab){
@@ -649,7 +661,7 @@ async function saveFromJSON(){
   if(!raw){showJSONError('Please paste some JSON first');return;}
   try{
     const r=parseJSONInput(raw);
-    recipes.push({id:Date.now().toString(),name:r.name,portions:parseInt(r.portions)||5,cookTime:r.cookTime||'',tags:Array.isArray(r.tags)?r.tags:[],notes:r.notes||'',ingredients:(r.ingredients||[]).map(i=>({name:String(i.name||'').trim(),qty:String(i.qty||''),unit:String(i.unit||'g').trim()})).filter(i=>i.name),method:r.method||'',createdAt:Date.now(),updatedAt:Date.now()});
+    recipes.push({id:Date.now().toString(),name:r.name,portions:parseInt(r.portions)||5,cookTime:r.cookTime||'',tags:Array.isArray(r.tags)?r.tags:[],notes:r.notes||'',ingredients:(r.ingredients||[]).map(i=>normaliseIngredient({name:String(i.name||'').trim(),qty:i.qty,unit:String(i.unit||'g').trim()})).filter(i=>i.name),method:r.method||'',createdAt:Date.now(),updatedAt:Date.now()});
     scheduleSave();document.getElementById('jsonPasteInput').value='';document.getElementById('jsonPreview').style.display='none';
     toast(`✅ "${r.name}" saved!`);showSection('cookbook',document.querySelectorAll('.nav-tab')[0]);
   }catch(e){showJSONError('Could not save: '+e.message);}
@@ -691,7 +703,7 @@ function populateForm(r){
 // ── SAVE / EDIT / DELETE ──
 async function saveRecipe(){
   const name=document.getElementById('recipeName').value.trim();if(!name){toast('Please add a recipe name');return;}
-  const recipe={id:editingId||Date.now().toString(),name,portions:parseInt(document.getElementById('recipePortions').value)||5,cookTime:document.getElementById('recipeCookTime').value.trim(),tags:document.getElementById('recipeTags').value.split(',').map(t=>t.trim()).filter(Boolean),notes:document.getElementById('recipeNotes').value.trim(),ingredients:getIngredients(),method:document.getElementById('recipeMethod').value.trim(),createdAt:editingId?(recipes.find(r=>r.id===editingId)?.createdAt||Date.now()):Date.now(),updatedAt:Date.now()};
+  const ings=getIngredients().map(i=>normaliseIngredient({...i,qty:parseFloat(i.qty)||0}));const recipe={id:editingId||Date.now().toString(),name,portions:parseInt(document.getElementById('recipePortions').value)||5,cookTime:document.getElementById('recipeCookTime').value.trim(),tags:document.getElementById('recipeTags').value.split(',').map(t=>t.trim()).filter(Boolean),notes:document.getElementById('recipeNotes').value.trim(),ingredients:ings,method:document.getElementById('recipeMethod').value.trim(),createdAt:editingId?(recipes.find(r=>r.id===editingId)?.createdAt||Date.now()):Date.now(),updatedAt:Date.now()};
   if(editingId){recipes=recipes.map(r=>r.id===editingId?recipe:r);editingId=null;}else recipes.push(recipe);
   scheduleSave();toast('✅ Recipe saved and syncing…');resetAddForm();showSection('cookbook',document.querySelectorAll('.nav-tab')[0]);
 }
@@ -739,13 +751,19 @@ function approvePlan(){
 }
 
 // ── SHOPPING ──
+function normaliseIngredient(i){
+  const q=parseFloat(i.qty)||0;
+  if(i.unit==='kg')return{...i,qty:Math.round(q*1000),unit:'g'};
+  if(i.unit==='l')return{...i,qty:Math.round(q*1000),unit:'ml'};
+  return{...i,qty:q};
+}
 function buildShoppingList(plan){
   const con={};
-  plan.forEach(recipe=>(recipe.ingredients||[]).forEach(ing=>{const k=ing.name.toLowerCase().trim();if(!con[k])con[k]={name:ing.name,qty:0,unit:ing.unit,isStaple:isStaple(ing.name)};const q=parseFloat(ing.qty)||0;if(['pot','sachet','pcs'].includes(ing.unit)){con[k].qty+=q;con[k].isCount=true;}else con[k].qty+=q;}));
+  plan.forEach(recipe=>(recipe.ingredients||[]).forEach(raw=>{const ing=normaliseIngredient(raw);const k=ing.name.toLowerCase().trim();if(!con[k])con[k]={name:ing.name,qty:0,unit:ing.unit,isStaple:isStaple(ing.name),isCount:['pcs','pot','sachet'].includes(ing.unit)};con[k].qty+=parseFloat(ing.qty)||0;}));
   const cats={'Meat':['chicken','beef','turkey','mince','lardons','pancetta','bacon'],'Dairy':['cheese','parmesan','feta','yoghurt','butter','cream','creme','milk'],'Veg':['broccoli','kale','spinach','carrot','celery','pepper','courgette','tomato','onion','cucumber','potato','bean','sweetcorn','lime'],'Pasta & Rice':['pasta','rice','spaghetti','linguine','rigatoni','noodle','grain','quinoa'],'Tins':['chopped plum','passata','chickpea','kidney','black bean','butter bean','cannellini','coconut'],'Sauces':['sauce','honey','puree','mayo','peanut','gochujang'],'Frozen':['frozen']};
   const getCat=name=>{const n=name.toLowerCase();for(const[c,ks]of Object.entries(cats))if(ks.some(k=>n.includes(k)))return c;return'Other';};
   const buy=[],staples=[];
-  Object.values(con).forEach(item=>{const fmt={...item,display:item.isCount?`${item.qty} ${item.unit}`:item.qty>=1000&&item.unit==='g'?`${(item.qty/1000).toFixed(1).replace(/\.0$/,'')}kg`:`${Math.round(item.qty)}${item.unit||'g'}`,category:getCat(item.name)};if(item.isStaple)staples.push(fmt);else buy.push(fmt);});
+  Object.values(con).forEach(item=>{const fmt={...item,display:item.isCount?`${item.qty} ${item.unit}`:`${Math.round(item.qty)}${item.unit||'g'}`,category:getCat(item.name)};if(item.isStaple)staples.push(fmt);else buy.push(fmt);});
   buy.sort((a,b)=>a.category.localeCompare(b.category)||a.name.localeCompare(b.name));staples.sort((a,b)=>a.name.localeCompare(b.name));
   shoppingList={buy,staples};localStorage.setItem('mealflow_shopping',JSON.stringify({list:shoppingList,recipes:plan.map(r=>r.name)}));renderShoppingList(plan);
 }
