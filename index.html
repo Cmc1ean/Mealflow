@@ -604,6 +604,7 @@ window.onload=async()=>{
   document.getElementById('copyPromptBtn').addEventListener('click',()=>copyPrompt());
   // Set AI prompt text
   document.getElementById('aiPromptDisplay').value=document.getElementById('jsonPromptText').textContent.trim();
+  if(localStorage.getItem('mealflow_scope_v')!=='2'){['mealflow_gtoken','mealflow_shared_folder'].forEach(k=>localStorage.removeItem(k));localStorage.setItem('mealflow_scope_v','2');}
   const stored=localStorage.getItem('mealflow_gtoken');
   if(stored){const p=JSON.parse(stored);if(p.expiry>Date.now()){accessToken=p.token;currentUser=JSON.parse(localStorage.getItem('mealflow_user')||'null');await initApp();return;}}
   hideLoading();showWelcome();
