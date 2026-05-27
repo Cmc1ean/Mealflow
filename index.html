@@ -166,9 +166,11 @@ textarea{resize:vertical;min-height:80px}
 .picker-item-meta{font-size:.75rem;color:var(--il);margin-top:2px}
 
 /* Shopping */
-.shop-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:.9rem}
-.shop-item-name{flex:1}
-.shop-item-qty{font-weight:600;color:var(--tc);font-size:.85rem;margin-left:12px;white-space:nowrap}
+.shop-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:.9rem;transition:opacity .2s}
+.shop-item.excluded{opacity:.3}
+.shop-item input[type=checkbox]{width:18px;height:18px;accent-color:var(--tc);flex-shrink:0;cursor:pointer}
+.shop-item-name{flex:1;cursor:pointer}
+.shop-item-qty{font-weight:600;color:var(--tc);font-size:.85rem;white-space:nowrap}
 .staple-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:.9rem}
 .staple-item input[type=checkbox]{width:18px;height:18px;accent-color:var(--tc);flex-shrink:0}
 .staple-item label{flex:1;cursor:pointer}
@@ -487,11 +489,13 @@ Rules:
           <div id="shoppingRecipeList" style="font-size:.82rem;opacity:.6;line-height:1.8"></div>
         </div>
         <div class="card">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
             <h3 style="font-family:'Playfair Display',serif;font-size:1.1rem">🛒 Buy this week</h3>
-            <button class="btn btn-secondary btn-sm" onclick="sendToOcado()">🛍 Send to Ocado</button>
+            <button class="btn btn-secondary btn-sm" id="sendOcadoBtn" onclick="sendToOcado()">🛍 Send to Ocado</button>
           </div>
+          <p style="font-size:.78rem;color:var(--il);margin-bottom:14px">Uncheck anything you already have — it won't be sent to Ocado</p>
           <div id="buyList"></div>
+          <div id="buyListSummary" style="margin-top:10px;padding:10px 0;border-top:1px solid var(--border);font-size:.82rem;color:var(--il)"></div>
         </div>
         <div class="card">
           <h3 style="font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:4px">🏠 Check cupboards</h3>
@@ -1017,15 +1021,48 @@ function renderShoppingList(plan){
   document.getElementById('shoppingEmpty').style.display='none';document.getElementById('shoppingContent').style.display='block';
   document.getElementById('shoppingRecipeList').innerHTML=(plan||approvedPlan).map(r=>`• ${r.name}`).join('<br>');
   let cur='';
-  document.getElementById('buyList').innerHTML=shoppingList.buy.map(item=>{let h='';if(item.category!==cur){if(cur)h+='<div style="height:6px"></div>';cur=item.category;}h+=`<div class="shop-item"><span class="shop-item-name">${item.name}</span><span class="shop-item-qty">${item.display}</span></div>`;return h;}).join('');
+  const buyEl=document.getElementById('buyList');
+  buyEl.innerHTML=shoppingList.buy.map((item,i)=>{
+    let h='';
+    if(item.category!==cur){if(cur)h+='<div style="height:6px"></div>';cur=item.category;}
+    const checked=!item.excluded;
+    h+=`<div class="shop-item${item.excluded?' excluded':''}" data-idx="${i}">
+      <input type="checkbox" id="buy_${i}"${checked?' checked':''}>
+      <label for="buy_${i}" class="shop-item-name">${item.name}</label>
+      <span class="shop-item-qty">${item.display}</span>
+    </div>`;
+    return h;
+  }).join('');
+  // Wire checkboxes
+  buyEl.querySelectorAll('.shop-item input[type=checkbox]').forEach(cb=>{
+    cb.addEventListener('change',()=>{
+      const idx=parseInt(cb.closest('.shop-item').dataset.idx);
+      shoppingList.buy[idx].excluded=!cb.checked;
+      cb.closest('.shop-item').classList.toggle('excluded',!cb.checked);
+      updateBuySummary();buildPlainText();
+    });
+  });
   document.getElementById('stapleList').innerHTML=shoppingList.staples.map((item,i)=>`<div class="staple-item"><input type="checkbox" id="staple_${i}"><label for="staple_${i}">${item.name}</label><span class="shop-item-qty">${item.display}</span></div>`).join('');
-  buildPlainText();
+  updateBuySummary();buildPlainText();
 }
-function buildPlainText(){const l=['=== BUY THIS WEEK ==='];shoppingList.buy.forEach(i=>l.push(`${i.name} — ${i.display}`));l.push('\n=== CHECK CUPBOARDS ===');shoppingList.staples.forEach(i=>l.push(`${i.name} — ${i.display}`));document.getElementById('plainTextList').value=l.join('\n');}
+function updateBuySummary(){
+  const total=shoppingList.buy.length;
+  const active=shoppingList.buy.filter(i=>!i.excluded).length;
+  const el=document.getElementById('buyListSummary');
+  if(!el)return;
+  el.textContent=active===total?`${total} items to order`:`${active} of ${total} items selected — ${total-active} excluded`;
+}
+function buildPlainText(){const l=['=== BUY THIS WEEK ==='];shoppingList.buy.filter(i=>!i.excluded).forEach(i=>l.push(`${i.name} — ${i.display}`));l.push('\n=== CHECK CUPBOARDS ===');shoppingList.staples.forEach(i=>l.push(`${i.name} — ${i.display}`));document.getElementById('plainTextList').value=l.join('\n');}
 function addStaplesToList(){const checked=shoppingList.staples.filter((_,i)=>document.getElementById(`staple_${i}`)?.checked);if(!checked.length){toast('Tick some staples first');return;}shoppingList.buy=[...shoppingList.buy,...checked.map(i=>({...i,isStaple:false}))];shoppingList.staples=shoppingList.staples.filter((_,i)=>!document.getElementById(`staple_${i}`)?.checked);renderShoppingList();buildPlainText();toast(`✅ Added ${checked.length} staples`);}
 const copyList=()=>navigator.clipboard.writeText(document.getElementById('plainTextList').value).then(()=>toast('📋 Copied!'));
 function clearShoppingList(){if(!confirm('Clear this shopping list?'))return;shoppingList={buy:[],staples:[]};localStorage.removeItem('mealflow_shopping');document.getElementById('shoppingEmpty').style.display='block';document.getElementById('shoppingContent').style.display='none';toast('🗑 List cleared');}
-function sendToOcado(){localStorage.setItem('mealflow_ocado_list',JSON.stringify([...shoppingList.buy,...shoppingList.staples.filter((_,i)=>document.getElementById(`staple_${i}`)?.checked)].map(i=>({name:i.name,qty:i.display}))));toast('🛍 List sent! Open Ocado, then click the MealFlow extension', 4000);}
+function sendToOcado(){
+  const buyItems=shoppingList.buy.filter(i=>!i.excluded);
+  const stapleItems=shoppingList.staples.filter((_,i)=>document.getElementById(`staple_${i}`)?.checked);
+  const list=[...buyItems,...stapleItems].map(i=>({name:i.name,qty:i.display,unit:i.unit,rawQty:i.qty}));
+  localStorage.setItem('mealflow_ocado_list',JSON.stringify(list));
+  toast('🛍 List sent! Open Ocado, then click the MealFlow extension',4000);
+}
 function loadSavedShoppingList(){const s=localStorage.getItem('mealflow_shopping');if(s)try{const d=JSON.parse(s);shoppingList=d.list;approvedPlan=(d.recipes||[]).map(name=>({name}));renderShoppingList();}catch(e){}}
 </script>
 </body>
