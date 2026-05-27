@@ -692,8 +692,10 @@ async function findOrCreateDriveFile(overrideFolderId){
   if(!driveFolderId)throw new Error('No folder');
 
   // Search for existing recipes file — use allDrives params if shared so we can see it
-  const spaces = isSharedFolder ? '' : '&spaces=drive';
-const searchUrl = `https://www.googleapis.com/drive/v3/files?q=name='${FILENAME}' and '${driveFolderId}' in parents and trashed=false&fields=files(id)${spaces}${isSharedFolder ? sharedParams : ''}`;
+  const searchQ = encodeURIComponent(`name='${FILENAME}' and '${driveFolderId}' in parents and trashed=false`);
+const searchUrl = isSharedFolder
+  ? `https://www.googleapis.com/drive/v3/files?q=${searchQ}&fields=files(id)&includeItemsFromAllDrives=true&supportsAllDrives=true&corpora=user`
+  : `https://www.googleapis.com/drive/v3/files?q=${searchQ}&fields=files(id)&spaces=drive`;
   const fls=await(await driveRequest(searchUrl)).json();
 
   if(fls.files?.length){
