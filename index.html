@@ -173,6 +173,52 @@ textarea{resize:vertical;min-height:80px}
 .staple-item input[type=checkbox]{width:18px;height:18px;accent-color:var(--tc);flex-shrink:0}
 .staple-item label{flex:1;cursor:pointer}
 .staple-item .shop-item-qty{color:var(--il)}
+
+/* ── WELCOME SCREEN ── */
+#welcomeScreen{min-height:100vh;background:var(--ink);display:none;flex-direction:column;align-items:center;overflow-y:auto}
+.w-inner{width:100%;max-width:480px;padding:0 20px 60px}
+.w-hero{text-align:center;padding:52px 0 36px}
+.w-logo{font-family:'Playfair Display',serif;font-size:3rem;font-weight:700;color:var(--cream);letter-spacing:-.02em;margin-bottom:10px}
+.w-logo span{color:var(--tcl);font-style:italic}
+.w-tagline{color:rgba(250,247,242,.55);font-size:.95rem;font-weight:300;line-height:1.6}
+.w-steps{display:flex;flex-direction:column;gap:0;margin:32px 0 40px}
+.w-step{display:flex;gap:16px;align-items:flex-start;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+.w-step:last-child{border-bottom:none}
+.w-step-icon{font-size:1.4rem;flex-shrink:0;width:36px;text-align:center;margin-top:2px}
+.w-step-body strong{display:block;color:var(--cream);font-size:.95rem;margin-bottom:3px}
+.w-step-body span{color:rgba(250,247,242,.5);font-size:.83rem;line-height:1.5}
+.w-divider{display:flex;align-items:center;gap:12px;color:rgba(250,247,242,.25);font-size:.8rem;margin:8px 0}
+.w-divider::before,.w-divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.1)}
+.w-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:var(--r);padding:22px;margin-bottom:12px}
+.w-card h3{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--cream);margin-bottom:6px}
+.w-card p{font-size:.85rem;color:rgba(250,247,242,.55);margin-bottom:18px;line-height:1.6}
+.w-card .hint{font-size:.78rem;color:rgba(250,247,242,.35);margin-top:12px;line-height:1.5;text-align:center}
+.w-google-btn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:14px 20px;background:white;border:none;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:500;cursor:pointer;transition:all .2s;color:var(--ink)}
+.w-google-btn:hover{opacity:.92;transform:translateY(-1px)}
+.w-google-btn:active{transform:translateY(0)}
+
+/* ── JOIN MODAL ── */
+.setup-modal{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;display:none;align-items:center;justify-content:center;padding:20px}
+.setup-modal.open{display:flex}
+.setup-box{background:var(--ww);border-radius:var(--r);padding:28px 24px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(28,26,23,.4);max-height:90vh;overflow-y:auto}
+.setup-box h3{font-family:'Playfair Display',serif;font-size:1.3rem;margin-bottom:8px}
+.setup-box>p{font-size:.88rem;color:var(--il);margin-bottom:20px;line-height:1.6}
+.drive-steps{list-style:none;margin-bottom:20px;background:var(--cream);border-radius:var(--rs);padding:16px}
+.drive-steps li{display:flex;gap:12px;font-size:.85rem;padding:8px 0;border-bottom:1px solid var(--border);line-height:1.5;align-items:flex-start}
+.drive-steps li:last-child{border-bottom:none;padding-bottom:0}
+.drive-steps li .ds-num{background:var(--tc);color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;flex-shrink:0;margin-top:1px}
+.drive-steps code{background:rgba(196,98,58,.12);color:var(--tc);border-radius:4px;padding:1px 5px;font-size:.82rem;font-family:monospace}
+
+/* ── SHARE BANNER ── */
+.share-banner{background:linear-gradient(135deg,#B85530,var(--tc));border-radius:var(--r);padding:20px;margin-bottom:14px;color:white}
+.share-banner h4{font-family:'Playfair Display',serif;font-size:1.05rem;margin-bottom:4px}
+.share-banner p{font-size:.82rem;opacity:.85;margin-bottom:14px;line-height:1.5}
+.share-banner .btn{background:white;color:var(--tc);font-weight:600}
+.share-how{background:var(--cream);border-radius:var(--rs);padding:14px 16px;margin-top:14px}
+.share-how p{font-size:.82rem;font-weight:600;color:var(--ink);margin-bottom:8px}
+.share-how ol{padding-left:18px;font-size:.82rem;color:var(--il);line-height:1.8}
+.share-how ol li{padding-left:4px}
+.share-how code{background:rgba(196,98,58,.12);color:var(--tc);border-radius:4px;padding:1px 5px;font-size:.8rem;font-family:monospace}
 </style>
 </head>
 <body>
@@ -183,18 +229,70 @@ textarea{resize:vertical;min-height:80px}
   <p id="loadingMsg">Loading…</p>
 </div>
 
-<div id="loginScreen" style="display:none">
-  <div class="ll">Meal<span>Flow</span></div>
-  <div style="color:rgba(250,247,242,.5);font-size:.95rem;margin-bottom:48px;font-weight:300">Your shared batch-cook cookbook</div>
-  <div class="login-card">
-    <h2>Welcome back</h2>
-    <p>Sign in with Google to access your shared cookbook. Recipes sync automatically between you and your partner.</p>
-    <button class="google-btn" onclick="signIn()">
-      <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-      Continue with Google
-    </button>
+<!-- WELCOME / ONBOARDING SCREEN -->
+<div id="welcomeScreen">
+  <div class="w-inner">
+    <div class="w-hero">
+      <div class="w-logo">Meal<span>Flow</span></div>
+      <div class="w-tagline">Your household cookbook &amp; weekly meal planner</div>
+    </div>
+
+    <div class="w-steps">
+      <div class="w-step">
+        <div class="w-step-icon">📖</div>
+        <div class="w-step-body"><strong>Build your cookbook</strong><span>Add recipes using AI or manually. Saves to your Google Drive.</span></div>
+      </div>
+      <div class="w-step">
+        <div class="w-step-icon">📅</div>
+        <div class="w-step-body"><strong>Plan your week</strong><span>Pick meals, build a shopping list, and send it to Ocado.</span></div>
+      </div>
+      <div class="w-step">
+        <div class="w-step-icon">🏠</div>
+        <div class="w-step-body"><strong>Share with your household</strong><span>Invite a partner or family member to use the same cookbook.</span></div>
+      </div>
+    </div>
+
+    <div class="w-card">
+      <h3>Start or continue your cookbook</h3>
+      <p>Sign in with Google to create your cookbook. Your recipes are saved to your private Google Drive — only people you invite can see them. If you already have a cookbook, signing in will reconnect you automatically.</p>
+      <button class="w-google-btn" id="signInNewBtn"><svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Sign in with Google</button>
+    </div>
+
+    <div class="w-divider">or</div>
+
+    <div class="w-card">
+      <h3>Join someone's cookbook</h3>
+      <p>Someone has shared their MealFlow cookbook with you. Sign in below and you'll be asked to paste the shared folder link they sent you.</p>
+      <button class="w-google-btn" id="signInJoinBtn"><svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Sign in &amp; join a cookbook</button>
+      <p class="hint">You'll need the sharing link from the person who owns the cookbook</p>
+    </div>
   </div>
 </div>
+
+<!-- JOIN HOUSEHOLD MODAL -->
+<div class="setup-modal" id="joinModal">
+  <div class="setup-box">
+    <h3>🔗 Join a shared cookbook</h3>
+    <p>First, the cookbook owner needs to share their MealFlow folder with you on Google Drive. Here's exactly how:</p>
+    <ul class="drive-steps">
+      <li><div class="ds-num">1</div><div>The cookbook owner opens MealFlow → <strong>Settings</strong> → taps <strong>"Copy sharing link"</strong></div></li>
+      <li><div class="ds-num">2</div><div>They send you that link — via WhatsApp, text, or email</div></li>
+      <li><div class="ds-num">3</div><div>Open that link on your phone or laptop. In Google Drive, tap <code>Add shortcut to Drive</code> or just make sure you can see the folder</div></li>
+      <li><div class="ds-num">4</div><div>Come back here and paste the link below</div></li>
+    </ul>
+    <div class="form-group">
+      <label>Paste the shared folder link</label>
+      <input type="url" id="joinFolderUrl" placeholder="https://drive.google.com/drive/folders/…">
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn btn-ghost" id="joinCancelBtn" style="flex:1">Back</button>
+      <button class="btn btn-primary" id="joinConfirmBtn" style="flex:1">Connect</button>
+    </div>
+    <div id="joinError" style="display:none;margin-top:10px;padding:10px;background:#FDE8E8;border-radius:8px;font-size:.82rem;color:#C0392B"></div>
+  </div>
+</div>
+
+<div id="loginScreen" style="display:none"></div>
 
 <div id="appShell">
   <header>
@@ -237,29 +335,45 @@ textarea{resize:vertical;min-height:80px}
     <section id="add" class="section">
       <h1 class="section-title">Add Recipe</h1>
       <div style="display:flex;gap:6px;margin-bottom:18px;background:var(--ww);border:1px solid var(--border);border-radius:var(--rs);padding:4px">
-        <button class="add-tab active" id="addTab_dictate" onclick="switchAddTab('dictate')">🎙 Dictate / AI</button>
+        <button class="add-tab active" id="addTab_ai" onclick="switchAddTab('ai')">🤖 Add via AI</button>
         <button class="add-tab" id="addTab_json" onclick="switchAddTab('json')">📋 Paste JSON</button>
         <button class="add-tab" id="addTab_manual" onclick="switchAddTab('manual')">✏️ Manual</button>
       </div>
 
-      <div id="addPane_dictate">
-        <p class="section-sub" style="margin-top:-10px">Speak or type — Claude will structure it</p>
-        <div class="dictation-area">
-          <h3>🎙 Speak your recipe</h3>
-          <p>Hit record and describe it naturally — ingredients, steps, whatever comes to mind</p>
-          <div class="transcript-box placeholder" id="transcriptBox">Your words will appear here as you speak…</div>
-          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-            <button class="btn btn-record" id="recordBtn" onclick="toggleRecording()">🎙 Start Recording</button>
-            <button class="btn btn-secondary btn-sm" onclick="clearTranscript()" style="width:auto">Clear</button>
+      <div id="addPane_ai">
+        <p class="section-sub" style="margin-top:-10px">Use free AI to convert any recipe — no account needed</p>
+        <div class="card" style="background:var(--ink);color:var(--cream)">
+          <div style="font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:6px">How it works</div>
+          <div class="welcome-steps" style="margin-bottom:0">
+            <div class="welcome-step"><div class="step-num" style="background:var(--tc)">1</div><div class="step-text" style="color:rgba(250,247,242,.8)">Copy the prompt below, then open Claude AI in a new tab</div></div>
+            <div class="welcome-step"><div class="step-num" style="background:var(--tc)">2</div><div class="step-text" style="color:rgba(250,247,242,.8)">Paste the prompt, then paste or type your recipe after it</div></div>
+            <div class="welcome-step"><div class="step-num" style="background:var(--tc)">3</div><div class="step-text" style="color:rgba(250,247,242,.8)">Copy the JSON it gives back, come here and tap Paste JSON tab</div></div>
           </div>
-          <p style="font-size:.75rem;color:rgba(250,247,242,.45);margin-top:10px">📱 iPhone: tap mic on keyboard as alternative</p>
         </div>
         <div class="card">
           <div class="form-group">
-            <label>Or type / paste your recipe description</label>
-            <textarea id="rawRecipeText" rows="4" placeholder="e.g. 'Big pot of chicken tikka — 4 chicken breasts, tin tomatoes, onion, garlic, tikka paste, coconut milk…'"></textarea>
+            <label>Step 1 — Copy this prompt</label>
+            <textarea id="aiPromptDisplay" rows="4" readonly style="font-size:.8rem;font-family:monospace;background:var(--cream);color:var(--ink);resize:none"></textarea>
           </div>
-          <button class="btn btn-primary" onclick="parseWithAI()" id="parseBtn">✨ Parse with AI</button>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary" id="copyPromptBtn" style="flex:1">📋 Copy Prompt</button>
+            <a href="https://claude.ai" target="_blank" class="btn btn-secondary" style="flex:1;text-decoration:none">🤖 Open Claude AI</a>
+          </div>
+          <p style="font-size:.78rem;color:var(--il);margin-top:10px;line-height:1.5">💡 Any free AI works — Claude, ChatGPT, Gemini. Paste the prompt, then add your recipe below it.</p>
+        </div>
+        <div class="card" style="border:2px dashed var(--border);background:transparent;box-shadow:none">
+          <p style="font-size:.85rem;color:var(--il);text-align:center">Got your JSON from the AI?<br>Switch to the <strong>Paste JSON</strong> tab above ↑</p>
+        </div>
+        <div class="card" style="opacity:.6">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <h4 style="font-size:.9rem;font-weight:600">⚡ Advanced: Direct AI parsing</h4>
+            <span style="font-size:.72rem;background:var(--tcp);color:var(--tc);padding:2px 8px;border-radius:20px;font-weight:500">Optional</span>
+          </div>
+          <p style="font-size:.82rem;color:var(--il);margin-bottom:12px;line-height:1.5">If you have an Anthropic API key, MealFlow can call AI directly without leaving the app. Set your key in Settings.</p>
+          <div class="form-group" style="margin-bottom:10px">
+            <textarea id="rawRecipeText" rows="3" placeholder="Paste your recipe here, then tap Parse…"></textarea>
+          </div>
+          <button class="btn btn-ghost" onclick="parseWithAI()" id="parseBtn" style="font-size:.85rem">✨ Parse with API key</button>
         </div>
       </div>
 
@@ -399,14 +513,29 @@ Rules:
     <section id="settings" class="section">
       <h1 class="section-title">Settings</h1>
       <p class="section-sub">Configure your MealFlow</p>
-      <div class="card" style="background:var(--ink);color:var(--cream)">
-        <h3 style="font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:6px">🤖 Anthropic API Key</h3>
-        <p style="font-size:.82rem;opacity:.6;margin-bottom:14px">Required for AI recipe parsing. Get a key at console.anthropic.com</p>
+      <!-- Share cookbook banner -->
+      <div class="share-banner">
+        <h4>🏠 Share your cookbook</h4>
+        <p>Invite your partner or household — they'll see and edit all the same recipes.</p>
+        <button class="btn btn-sm" id="shareCookbookBtn">📋 Copy sharing link</button>
+        <div class="share-how">
+          <p>How to share — 3 steps:</p>
+          <ol>
+            <li>Tap <strong>Copy sharing link</strong> above and send it to your partner via WhatsApp or text</li>
+            <li>They open the link → Google Drive asks them to sign in → tap <code>Add shortcut to Drive</code></li>
+            <li>They open MealFlow → tap <strong>Join someone's cookbook</strong> → paste the link → done</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="card">
+        <h4 style="font-weight:600;margin-bottom:6px">⚡ Direct AI Parsing <span style="font-size:.72rem;background:var(--tcp);color:var(--tc);padding:2px 8px;border-radius:20px;font-weight:500;margin-left:4px">Optional</span></h4>
+        <p style="font-size:.82rem;color:var(--il);margin-bottom:14px;line-height:1.5">Adds an API key so MealFlow can call AI directly without leaving the app. Not needed — the free AI method in the Add tab works just as well.</p>
         <div style="display:flex;gap:8px">
-          <input type="password" id="apiKeyInput" placeholder="sk-ant-…" autocomplete="off" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:var(--cream);flex:1">
+          <input type="password" id="apiKeyInput" placeholder="sk-ant-…" autocomplete="off" style="flex:1">
           <button onclick="saveApiKey()" style="background:var(--tc);color:white;border:none;border-radius:var(--rs);padding:0 16px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;white-space:nowrap">Save</button>
         </div>
-        <div id="apiStatus" style="font-size:.78rem;margin-top:8px;opacity:.7"></div>
+        <div id="apiStatus" style="font-size:.78rem;margin-top:8px;color:var(--il)"></div>
       </div>
       <div class="card">
         <div class="form-group">
@@ -421,7 +550,6 @@ Rules:
       </div>
       <div class="card">
         <h4 style="font-weight:600;margin-bottom:6px">☁️ Google Drive Sync</h4>
-        <p class="text-muted" style="margin-bottom:10px">Recipes save to Google Drive and sync between you and your partner.</p>
         <div id="driveStatus" style="font-size:.85rem;color:var(--sage);margin-bottom:12px"></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-secondary btn-sm" onclick="exportData()">⬇ Export Backup</button>
@@ -430,12 +558,12 @@ Rules:
       </div>
       <div class="card">
         <h4 style="font-weight:600;margin-bottom:6px">About</h4>
-        <p class="text-muted">MealFlow v7 · Built with Claude</p>
+        <p class="text-muted">MealFlow v8 · Built with Claude</p>
       </div>
     </section>
   </main>
 
-  <button class="fab" onclick="showSection('add',document.querySelectorAll('.nav-tab')[1]);window.scrollTo(0,0)">+</button>
+  <button class="fab" onclick="showSection('add',document.querySelectorAll('.nav-tab')[1]);switchAddTab('ai');window.scrollTo(0,0)">+</button>
 </div>
 
 <div class="modal-overlay" id="recipeModal">
@@ -463,15 +591,27 @@ let accessToken=null,driveFileId=null,driveFolderId=null,currentUser=null,saveTi
 let weekPlan=[],targetMealCount=4,approvedPlan=[],shoppingList={buy:[],staples:[]};
 
 // ── INIT ──
+let joiningHousehold=false;
+
 window.onload=async()=>{
   setLoading('Starting up…');
+  // Wire up welcome screen buttons
+  document.getElementById('signInNewBtn').addEventListener('click',()=>{joiningHousehold=false;signIn();});
+  document.getElementById('signInJoinBtn').addEventListener('click',()=>{joiningHousehold=true;signIn();});
+  document.getElementById('joinCancelBtn').addEventListener('click',()=>closeJoinModal());
+  document.getElementById('joinConfirmBtn').addEventListener('click',()=>confirmJoin());
+  document.getElementById('shareCookbookBtn').addEventListener('click',()=>shareCookbook());
+  document.getElementById('copyPromptBtn').addEventListener('click',()=>copyPrompt());
+  // Set AI prompt text
+  document.getElementById('aiPromptDisplay').value=document.getElementById('jsonPromptText').textContent.trim();
   const stored=localStorage.getItem('mealflow_gtoken');
   if(stored){const p=JSON.parse(stored);if(p.expiry>Date.now()){accessToken=p.token;currentUser=JSON.parse(localStorage.getItem('mealflow_user')||'null');await initApp();return;}}
-  hideLoading();showLoginScreen();
+  hideLoading();showWelcome();
 };
 const setLoading=msg=>{document.getElementById('loadingMsg').textContent=msg;document.getElementById('loadingOverlay').style.display='flex'};
 const hideLoading=()=>document.getElementById('loadingOverlay').style.display='none';
-const showLoginScreen=()=>document.getElementById('loginScreen').style.display='flex';
+const showWelcome=()=>{document.getElementById('welcomeScreen').style.display='flex';};
+const hideWelcome=()=>{document.getElementById('welcomeScreen').style.display='none';};
 
 // ── AUTH ──
 function signIn(){
@@ -480,27 +620,46 @@ function signIn(){
     accessToken=r.access_token;
     localStorage.setItem('mealflow_gtoken',JSON.stringify({token:accessToken,expiry:Date.now()+(r.expires_in*1000)}));
     try{const u=await(await fetch('https://www.googleapis.com/oauth2/v2/userinfo',{headers:{Authorization:`Bearer ${accessToken}`}})).json();currentUser=u;localStorage.setItem('mealflow_user',JSON.stringify(u));}catch(e){}
-    document.getElementById('loginScreen').style.display='none';setLoading('Syncing…');await initApp();
+    if(joiningHousehold){showJoinModal();return;}
+    hideWelcome();setLoading('Setting up your cookbook…');await initApp();
   }}).requestAccessToken();
 }
 function signOut(){
   google.accounts.oauth2.revoke(accessToken,()=>{});
-  ['mealflow_gtoken','mealflow_user'].forEach(k=>localStorage.removeItem(k));
-  accessToken=null;currentUser=null;recipes=[];
-  document.getElementById('appShell').style.display='none';showLoginScreen();closeUserMenu();toast('Signed out');
+  ['mealflow_gtoken','mealflow_user','mealflow_shared_folder'].forEach(k=>localStorage.removeItem(k));
+  accessToken=null;currentUser=null;recipes=[];driveFileId=null;driveFolderId=null;
+  document.getElementById('appShell').style.display='none';showWelcome();closeUserMenu();toast('Signed out');
+}
+
+// ── JOIN HOUSEHOLD ──
+function showJoinModal(){hideWelcome();document.getElementById('joinModal').classList.add('open');}
+function closeJoinModal(){document.getElementById('joinModal').classList.remove('open');showWelcome();}
+async function confirmJoin(){
+  const url=document.getElementById('joinFolderUrl').value.trim();
+  const errEl=document.getElementById('joinError');
+  errEl.style.display='none';
+  // Extract folder ID from Drive URL
+  const match=url.match(/folders\/([a-zA-Z0-9_-]+)/);
+  if(!match){errEl.textContent='That doesn\'t look like a Google Drive folder link. It should contain "folders/" in the URL.';errEl.style.display='block';return;}
+  const sharedFolderId=match[1];
+  // Store shared folder preference and proceed
+  localStorage.setItem('mealflow_shared_folder',sharedFolderId);
+  document.getElementById('joinModal').classList.remove('open');
+  setLoading('Connecting to shared cookbook…');
+  await initApp(sharedFolderId);
 }
 
 // ── APP INIT ──
-async function initApp(){
+async function initApp(overrideFolderId){
   setLoading('Finding your cookbook…');
   try{
-    await findOrCreateDriveFile();setLoading('Loading recipes…');await loadFromDrive();
-    hideLoading();document.getElementById('loginScreen').style.display='none';document.getElementById('appShell').style.display='block';
+    await findOrCreateDriveFile(overrideFolderId);setLoading('Loading recipes…');await loadFromDrive();
+    hideLoading();document.getElementById('appShell').style.display='block';
     renderHeader();renderCookbook();loadSettings();loadSavedShoppingList();setSyncStatus('synced');updateDriveStatus();
   }catch(e){
     hideLoading();console.error(e);toast('❌ Could not connect to Drive');
     recipes=JSON.parse(localStorage.getItem('mealflow_recipes_local')||'[]');
-    document.getElementById('loginScreen').style.display='none';document.getElementById('appShell').style.display='block';
+    document.getElementById('appShell').style.display='block';
     renderHeader();renderCookbook();setSyncStatus('error');
   }
 }
@@ -516,10 +675,17 @@ async function driveRequest(url,opts={}){
   if(r.status===401){setSyncStatus('error');toast('Session expired — please sign in again');signOut();throw new Error('Unauthorized');}
   return r;
 }
-async function findOrCreateDriveFile(){
-  const fs=await(await driveRequest(`https://www.googleapis.com/drive/v3/files?q=name='${FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false&fields=files(id)&spaces=drive`)).json();
-  if(fs.files?.length){driveFolderId=fs.files[0].id;}
-  else{const f=await(await driveRequest('https://www.googleapis.com/drive/v3/files',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:FOLDER_NAME,mimeType:'application/vnd.google-apps.folder'})})).json();driveFolderId=f.id;}
+async function findOrCreateDriveFile(overrideFolderId){
+  // If joining a shared household, use that folder directly
+  const savedShared=localStorage.getItem('mealflow_shared_folder');
+  if(overrideFolderId||savedShared){
+    driveFolderId=overrideFolderId||savedShared;
+  } else {
+    // Find or create own MealFlow folder
+    const fs=await(await driveRequest(`https://www.googleapis.com/drive/v3/files?q=name='${FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false&fields=files(id)&spaces=drive`)).json();
+    if(fs.files?.length){driveFolderId=fs.files[0].id;}
+    else{const f=await(await driveRequest('https://www.googleapis.com/drive/v3/files',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:FOLDER_NAME,mimeType:'application/vnd.google-apps.folder'})})).json();driveFolderId=f.id;}
+  }
   if(!driveFolderId)throw new Error('No folder');
   const fls=await(await driveRequest(`https://www.googleapis.com/drive/v3/files?q=name='${FILENAME}' and '${driveFolderId}' in parents and trashed=false&fields=files(id)&spaces=drive`)).json();
   if(fls.files?.length){driveFileId=fls.files[0].id;}
@@ -557,10 +723,22 @@ function setSyncStatus(s){
 }
 function updateDriveStatus(){
   const el=document.getElementById('driveStatus');
+  const isShared=!!localStorage.getItem('mealflow_shared_folder');
   if(driveFolderId){
-    el.innerHTML=`✓ Connected — <a href="https://drive.google.com/drive/folders/${driveFolderId}" target="_blank" style="color:var(--tc)">📂 Open MealFlow folder</a><div style="margin-top:10px;padding:10px;background:var(--tcp);border-radius:8px;font-size:.82rem;color:var(--ink)"><strong>Share with your partner:</strong><br>1. Open folder above → right-click → Share<br>2. Add her Gmail → Editor → Send<br>3. She signs in to MealFlow — done</div>`;
+    el.innerHTML=`<span style="color:var(--sage)">✓ ${isShared?'Connected to shared cookbook':'Your cookbook is synced'}</span> · <a href="https://drive.google.com/drive/folders/${driveFolderId}" target="_blank" style="color:var(--tc);font-size:.82rem">Open in Drive ↗</a>`;
     el.style.color='inherit';
   }else{el.textContent='⚠ Not connected';el.style.color='#E74C3C';}
+}
+function shareCookbook(){
+  if(!driveFolderId){toast('Connect to Drive first');return;}
+  const link=`https://drive.google.com/drive/folders/${driveFolderId}`;
+  navigator.clipboard.writeText(link).then(()=>{
+    toast('📋 Sharing link copied!');
+    // Show instructions
+    const btn=document.getElementById('shareCookbookBtn');
+    btn.textContent='✓ Copied!';
+    setTimeout(()=>btn.textContent='📋 Copy sharing link',3000);
+  });
 }
 
 // ── USER MENU ──
@@ -634,7 +812,7 @@ const getIngredients=()=>Array.from(document.querySelectorAll('#ingredientRows .
 
 // ── ADD TABS ──
 function switchAddTab(tab){
-  ['dictate','json','manual'].forEach(t=>{document.getElementById(`addPane_${t}`).style.display=t===tab?'block':'none';document.getElementById(`addTab_${t}`).classList.toggle('active',t===tab);});
+  ['ai','json','manual'].forEach(t=>{document.getElementById(`addPane_${t}`).style.display=t===tab?'block':'none';document.getElementById(`addTab_${t}`).classList.toggle('active',t===tab);});
   if(tab==='manual')showManualForm();
 }
 function showManualForm(){
@@ -643,26 +821,79 @@ function showManualForm(){
 }
 
 // ── JSON PASTE ──
-function copyPrompt(){navigator.clipboard.writeText(document.getElementById('jsonPromptText').textContent.trim()).then(()=>toast('📋 Prompt copied!'));}
+function copyPrompt(){
+  const text=document.getElementById('jsonPromptText').textContent.trim();
+  navigator.clipboard.writeText(text).then(()=>{
+    toast('📋 Prompt copied — now open Claude AI and paste it!',3500);
+    const btn=document.getElementById('copyPromptBtn');
+    if(btn){btn.textContent='✓ Copied!';setTimeout(()=>btn.textContent='📋 Copy Prompt',3000);}
+  });
+}
 function previewJSON(){
   const raw=document.getElementById('jsonPasteInput').value.trim();
   document.getElementById('jsonError').style.display='none';document.getElementById('jsonPreview').style.display='none';
   if(!raw){showJSONError('Please paste some JSON first');return;}
   try{
     const r=parseJSONInput(raw);
-    document.getElementById('jsonPreviewContent').innerHTML=`<strong>${r.name}</strong><br>🍽 ${r.portions||'?'} portions · ⏱ ${r.cookTime||'?'}<br>${r.tags?.length?'🏷 '+r.tags.join(', ')+'<br>':''}<br><strong>${(r.ingredients||[]).length} ingredients:</strong><br>${(r.ingredients||[]).map(i=>`${i.name} — ${i.qty}${i.unit}`).join('<br>')}${r.method?`<br><br><strong>Method:</strong><br>${r.method.slice(0,200)}${r.method.length>200?'…':''}`:''}`; 
+    window._previewedRecipe=r;
+    const ingRows=r.ingredients.map((ing,idx)=>`
+      <div class="ingredient-row" data-idx="${idx}" style="grid-template-columns:2fr 1fr 1.5fr 36px;margin-bottom:6px">
+        <input type="text" value="${ing.name}" placeholder="Ingredient" data-field="name" data-idx="${idx}">
+        <input type="text" value="${ing.qty}" placeholder="Qty" data-field="qty" data-idx="${idx}">
+        <select data-field="unit" data-idx="${idx}" style="padding:10px 8px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:.9rem;background:var(--ww);color:var(--ink)">
+          ${['g','ml','pcs','pot','sachet'].map(u=>`<option value="${u}"${u===ing.unit?' selected':''}>${u}</option>`).join('')}
+        </select>
+        <button class="remove-btn" data-remove="${idx}">×</button>
+      </div>`).join('');
+    document.getElementById('jsonPreviewContent').innerHTML=`
+      <div style="margin-bottom:10px"><strong>${r.name}</strong> · 🍽 ${r.portions||'?'} portions · ⏱ ${r.cookTime||'?'}</div>
+      ${r.tags?.length?`<div style="margin-bottom:10px">🏷 ${r.tags.join(', ')}</div>`:''}
+      <div style="font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--il);margin-bottom:8px">Ingredients — edit before saving</div>
+      <div style="display:grid;grid-template-columns:2fr 1fr 1.5fr 36px;gap:6px;margin-bottom:6px">
+        <span style="font-size:.72rem;color:var(--il);text-transform:uppercase">Item</span>
+        <span style="font-size:.72rem;color:var(--il);text-transform:uppercase">Qty</span>
+        <span style="font-size:.72rem;color:var(--il);text-transform:uppercase">Unit</span><span></span>
+      </div>
+      <div id="previewIngRows">${ingRows}</div>
+      <button id="previewAddIngBtn" style="background:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:.8rem;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--il);margin-top:4px">+ Add ingredient</button>
+      ${r.method?`<div style="margin-top:12px;font-size:.82rem;color:var(--il)"><strong>Method:</strong> ${r.method.slice(0,200)}${r.method.length>200?'…':''}</div>`:''}`;
     document.getElementById('jsonPreview').style.display='block';
+    // Wire up live editing
+    document.getElementById('previewIngRows').addEventListener('input',e=>{
+      const el=e.target;const idx=parseInt(el.dataset.idx);const field=el.dataset.field;
+      if(idx>=0&&field)window._previewedRecipe.ingredients[idx][field]=el.value;
+    });
+    document.getElementById('previewIngRows').addEventListener('change',e=>{
+      const el=e.target;const idx=parseInt(el.dataset.idx);const field=el.dataset.field;
+      if(idx>=0&&field)window._previewedRecipe.ingredients[idx][field]=el.value;
+    });
+    document.getElementById('previewIngRows').addEventListener('click',e=>{
+      if(e.target.dataset.remove!==undefined){
+        const idx=parseInt(e.target.dataset.remove);
+        window._previewedRecipe.ingredients.splice(idx,1);
+        previewJSON();
+      }
+    });
+    document.getElementById('previewAddIngBtn').addEventListener('click',()=>{
+      window._previewedRecipe.ingredients.push({name:'',qty:0,unit:'g'});
+      previewJSON();
+    });
   }catch(e){showJSONError('Invalid JSON: '+e.message);}
 }
-const parseJSONInput=raw=>{const p=JSON.parse(raw.replace(/^```json?\s*/i,'').replace(/```\s*$/,'').trim());if(!p.name)throw new Error('"name" required');if(!p.ingredients)throw new Error('"ingredients" required');return p;};
+const parseJSONInput=raw=>{const cleaned=raw.replace(/^```json?\s*/i,'').replace(/```\s*$/,'').trim().replace(/[\u2018\u2019]/g,"'").replace(/[\u201C\u201D\u201E\u201F\u2033\u2036]/g,'"');const p=JSON.parse(cleaned);if(!p.name)throw new Error('"name" required');if(!p.ingredients)throw new Error('"ingredients" required');return p;};
 async function saveFromJSON(){
-  const raw=document.getElementById('jsonPasteInput').value.trim();
   document.getElementById('jsonError').style.display='none';
-  if(!raw){showJSONError('Please paste some JSON first');return;}
+  // Use edited preview recipe if available, otherwise parse fresh from textarea
+  let r=window._previewedRecipe;
+  if(!r){
+    const raw=document.getElementById('jsonPasteInput').value.trim();
+    if(!raw){showJSONError('Please paste some JSON first');return;}
+    try{r=parseJSONInput(raw);}catch(e){showJSONError('Could not save: '+e.message);return;}
+  }
   try{
-    const r=parseJSONInput(raw);
     recipes.push({id:Date.now().toString(),name:r.name,portions:parseInt(r.portions)||5,cookTime:r.cookTime||'',tags:Array.isArray(r.tags)?r.tags:[],notes:r.notes||'',ingredients:(r.ingredients||[]).map(i=>normaliseIngredient({name:String(i.name||'').trim(),qty:i.qty,unit:String(i.unit||'g').trim()})).filter(i=>i.name),method:r.method||'',createdAt:Date.now(),updatedAt:Date.now()});
     scheduleSave();document.getElementById('jsonPasteInput').value='';document.getElementById('jsonPreview').style.display='none';
+    window._previewedRecipe=null;
     toast(`✅ "${r.name}" saved!`);showSection('cookbook',document.querySelectorAll('.nav-tab')[0]);
   }catch(e){showJSONError('Could not save: '+e.message);}
 }
@@ -779,7 +1010,7 @@ function buildPlainText(){const l=['=== BUY THIS WEEK ==='];shoppingList.buy.for
 function addStaplesToList(){const checked=shoppingList.staples.filter((_,i)=>document.getElementById(`staple_${i}`)?.checked);if(!checked.length){toast('Tick some staples first');return;}shoppingList.buy=[...shoppingList.buy,...checked.map(i=>({...i,isStaple:false}))];shoppingList.staples=shoppingList.staples.filter((_,i)=>!document.getElementById(`staple_${i}`)?.checked);renderShoppingList();buildPlainText();toast(`✅ Added ${checked.length} staples`);}
 const copyList=()=>navigator.clipboard.writeText(document.getElementById('plainTextList').value).then(()=>toast('📋 Copied!'));
 function clearShoppingList(){if(!confirm('Clear this shopping list?'))return;shoppingList={buy:[],staples:[]};localStorage.removeItem('mealflow_shopping');document.getElementById('shoppingEmpty').style.display='block';document.getElementById('shoppingContent').style.display='none';toast('🗑 List cleared');}
-function sendToOcado(){localStorage.setItem('mealflow_ocado_list',JSON.stringify([...shoppingList.buy,...shoppingList.staples.filter((_,i)=>document.getElementById(`staple_${i}`)?.checked)].map(i=>({name:i.name,qty:i.display}))));toast('🛍 List ready — open Ocado and activate the extension');}
+function sendToOcado(){localStorage.setItem('mealflow_ocado_list',JSON.stringify([...shoppingList.buy,...shoppingList.staples.filter((_,i)=>document.getElementById(`staple_${i}`)?.checked)].map(i=>({name:i.name,qty:i.display}))));toast('🛍 List sent! Open Ocado, then click the MealFlow extension', 4000);}
 function loadSavedShoppingList(){const s=localStorage.getItem('mealflow_shopping');if(s)try{const d=JSON.parse(s);shoppingList=d.list;approvedPlan=(d.recipes||[]).map(name=>({name}));renderShoppingList();}catch(e){}}
 </script>
 </body>
