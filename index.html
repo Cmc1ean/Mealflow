@@ -676,23 +676,34 @@ async function driveRequest(url,opts={}){
   return r;
 }
 async function findOrCreateDriveFile(overrideFolderId){
-  // If joining a shared household, use that folder directly
   const savedShared=localStorage.getItem('mealflow_shared_folder');
-  if(overrideFolderId||savedShared){
+  const isSharedFolder=!!(overrideFolderId||savedShared);
+  // Shared Drive params needed to see files in folders shared by others
+  const sharedParams='&includeItemsFromAllDrives=true&supportsAllDrives=true&corpora=allDrives';
+
+  if(isSharedFolder){
     driveFolderId=overrideFolderId||savedShared;
   } else {
-    // Find or create own MealFlow folder
+    // Find or create own MealFlow folder in user's own Drive
     const fs=await(await driveRequest(`https://www.googleapis.com/drive/v3/files?q=name='${FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false&fields=files(id)&spaces=drive`)).json();
     if(fs.files?.length){driveFolderId=fs.files[0].id;}
     else{const f=await(await driveRequest('https://www.googleapis.com/drive/v3/files',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:FOLDER_NAME,mimeType:'application/vnd.google-apps.folder'})})).json();driveFolderId=f.id;}
   }
   if(!driveFolderId)throw new Error('No folder');
-  const fls=await(await driveRequest(`https://www.googleapis.com/drive/v3/files?q=name='${FILENAME}' and '${driveFolderId}' in parents and trashed=false&fields=files(id)&spaces=drive`)).json();
-  if(fls.files?.length){driveFileId=fls.files[0].id;}
-  else{
+
+  // Search for existing recipes file — use allDrives params if shared so we can see it
+  const searchUrl=`https://www.googleapis.com/drive/v3/files?q=name='${FILENAME}' and '${driveFolderId}' in parents and trashed=false&fields=files(id)&spaces=drive${isSharedFolder?sharedParams:''}`;
+  const fls=await(await driveRequest(searchUrl)).json();
+
+  if(fls.files?.length){
+    driveFileId=fls.files[0].id;
+  } else {
+    // Create new recipes file — supportsAllDrives needed to create in a shared folder
     const b='-------mf_boundary';
-    const body=[`--${b}`,'Content-Type: application/json; charset=UTF-8','',JSON.stringify({name:FILENAME,mimeType:'application/json',parents:[driveFolderId]}),`--${b}`,'Content-Type: application/json','','[]',`--${b}--`].join('\r\n');
-    const cr=await(await driveRequest('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{method:'POST',headers:{'Content-Type':`multipart/related; boundary=${b}`},body})).json();
+    const meta={name:FILENAME,mimeType:'application/json',parents:[driveFolderId]};
+    const body=[`--${b}`,'Content-Type: application/json; charset=UTF-8','',JSON.stringify(meta),`--${b}`,'Content-Type: application/json','','[]',`--${b}--`].join('\r\n');
+    const uploadUrl=`https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id${isSharedFolder?'&supportsAllDrives=true':''}`;
+    const cr=await(await driveRequest(uploadUrl,{method:'POST',headers:{'Content-Type':`multipart/related; boundary=${b}`},body})).json();
     driveFileId=cr.id;
   }
   if(!driveFileId)throw new Error('No file');
@@ -707,7 +718,7 @@ async function loadFromDrive(){
 async function uploadToDrive(data){
   if(!driveFileId||!accessToken)return;setSyncStatus('syncing');
   try{
-    await driveRequest(`https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=media`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    const isShared=!!localStorage.getItem('mealflow_shared_folder');await driveRequest(`https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=media${isShared?'&supportsAllDrives=true':''}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
     localStorage.setItem('mealflow_recipes_local',JSON.stringify(data));setSyncStatus('synced');
   }catch(e){setSyncStatus('error');toast('⚠️ Sync failed — saved locally');}
 }
