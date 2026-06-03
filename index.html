@@ -4,316 +4,381 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>MealFlow</title>
-<meta name="description" content="Your household cookbook and weekly meal planner">
 <meta name="theme-color" content="#1C1A17">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="MealFlow">
-<meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
-:root {
+/* ── TOKENS ── */
+:root{
   --cream:#FAF7F2; --ww:#FFFEF9; --ink:#1C1A17; --il:#5C5750;
   --tc:#C4623A; --tcl:#E8845F; --tcp:#F5E6DF;
   --sage:#7A9E7E; --sagep:#E8F0E9; --gold:#D4A843;
-  --border:#E8E2D9; --sh:0 2px 16px rgba(28,26,23,.08);
-  --r:16px; --rs:10px;
+  --border:#E8E2D9; --sh:0 2px 20px rgba(28,26,23,.07);
+  --r:18px; --rs:12px;
+  --tab-h:68px;
+  --header-h:56px;
 }
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;font-size:16px;line-height:1.5}
-/* PWA safe areas for iPhone notch and home bar */
-header{padding-top:max(14px, env(safe-area-inset-top))!important}
-main{padding-bottom:max(20px, calc(env(safe-area-inset-bottom) + 80px))!important}
-.fab{bottom:max(24px, calc(env(safe-area-inset-bottom) + 16px))!important}
-nav{padding-left:max(20px, env(safe-area-inset-left));padding-right:max(20px, env(safe-area-inset-right))}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);font-size:16px;line-height:1.5;overscroll-behavior:none}
 
-/* Login */
-#loginScreen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;background:var(--ink);text-align:center}
-.ll{font-family:'Playfair Display',serif;font-size:3rem;font-weight:700;color:var(--cream);margin-bottom:8px;letter-spacing:-.02em}
-.ll span,.logo span{color:var(--tcl);font-style:italic}
-.login-card{background:var(--ww);border-radius:var(--r);padding:32px 28px;max-width:360px;width:100%;box-shadow:0 8px 40px rgba(28,26,23,.14)}
-.login-card h2{font-family:'Playfair Display',serif;font-size:1.3rem;margin-bottom:8px}
-.login-card p{font-size:.85rem;color:var(--il);margin-bottom:24px;line-height:1.6}
-.google-btn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:14px 20px;background:white;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:500;cursor:pointer;transition:all .2s;color:var(--ink)}
-.google-btn:hover{background:var(--cream);border-color:var(--tc)}
+/* ── LOADING ── */
+#loadingOverlay{position:fixed;inset:0;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:900;color:var(--cream)}
+.loading-logo{font-family:'Playfair Display',serif;font-size:2.8rem;font-weight:700;letter-spacing:-.02em;margin-bottom:28px}
+.loading-logo span{color:var(--tcl);font-style:italic}
+.loading-spinner{width:28px;height:28px;border:2.5px solid rgba(250,247,242,.2);border-top-color:var(--tcl);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:12px}
+#loadingMsg{color:rgba(250,247,242,.4);font-size:.85rem}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-/* Shell */
-#appShell{display:none}
-header{background:var(--ink);color:var(--cream);padding:14px 20px;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 12px rgba(28,26,23,.3)}
-.logo{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;letter-spacing:-.02em}
-.header-right{display:flex;align-items:center;gap:10px}
-.user-avatar{width:32px;height:32px;border-radius:50%;border:2px solid var(--tcl);object-fit:cover;cursor:pointer}
-.user-initials{width:32px;height:32px;border-radius:50%;background:var(--tc);color:white;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;cursor:pointer}
-.sync-indicator{font-size:.72rem;color:rgba(250,247,242,.5);display:flex;align-items:center;gap:5px}
-.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--sage);transition:background .3s}
+/* ── WELCOME SCREEN ── */
+#welcomeScreen{position:fixed;inset:0;background:var(--ink);display:none;flex-direction:column;align-items:center;overflow-y:auto;z-index:800;padding-bottom:env(safe-area-inset-bottom)}
+.w-inner{width:100%;max-width:440px;padding:0 24px 48px}
+.w-hero{text-align:center;padding:60px 0 40px}
+.w-logo{font-family:'Playfair Display',serif;font-size:3.2rem;font-weight:700;color:var(--cream);letter-spacing:-.02em;margin-bottom:10px}
+.w-logo span{color:var(--tcl);font-style:italic}
+.w-tagline{color:rgba(250,247,242,.5);font-size:1rem;font-weight:300;line-height:1.6}
+.w-steps{margin:0 0 36px}
+.w-step{display:flex;gap:16px;align-items:flex-start;padding:16px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+.w-step:last-child{border-bottom:none}
+.w-step-icon{font-size:1.5rem;flex-shrink:0;width:38px;text-align:center}
+.w-step-body strong{display:block;color:var(--cream);font-size:1rem;margin-bottom:3px;font-weight:600}
+.w-step-body span{color:rgba(250,247,242,.45);font-size:.88rem;line-height:1.5}
+.w-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:var(--r);padding:24px;margin-bottom:12px}
+.w-card h3{font-family:'Playfair Display',serif;font-size:1.15rem;color:var(--cream);margin-bottom:8px}
+.w-card p{font-size:.9rem;color:rgba(250,247,242,.5);margin-bottom:20px;line-height:1.6}
+.w-card .hint{font-size:.78rem;color:rgba(250,247,242,.3);margin-top:14px;line-height:1.5;text-align:center}
+.w-divider{display:flex;align-items:center;gap:12px;color:rgba(250,247,242,.2);font-size:.8rem;margin:6px 0}
+.w-divider::before,.w-divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.1)}
+.w-google-btn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:16px 20px;background:white;border:none;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:600;cursor:pointer;color:var(--ink);transition:opacity .15s}
+.w-google-btn:active{opacity:.85}
+
+/* ── JOIN MODAL ── */
+.setup-modal{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:850;display:none;align-items:flex-end;justify-content:center;padding:0}
+.setup-modal.open{display:flex}
+.setup-box{background:var(--ww);border-radius:var(--r) var(--r) 0 0;padding:28px 24px calc(28px + env(safe-area-inset-bottom));width:100%;max-width:560px;max-height:92vh;overflow-y:auto}
+.setup-box h3{font-family:'Playfair Display',serif;font-size:1.4rem;margin-bottom:8px}
+.setup-box>p{font-size:.9rem;color:var(--il);margin-bottom:20px;line-height:1.6}
+.drive-steps{list-style:none;margin-bottom:20px;background:var(--cream);border-radius:var(--rs);padding:16px}
+.drive-steps li{display:flex;gap:12px;font-size:.9rem;padding:10px 0;border-bottom:1px solid var(--border);line-height:1.5;align-items:flex-start}
+.drive-steps li:last-child{border-bottom:none;padding-bottom:0}
+.drive-steps li .ds-num{background:var(--tc);color:white;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;margin-top:1px}
+.drive-steps code{background:rgba(196,98,58,.12);color:var(--tc);border-radius:4px;padding:2px 6px;font-size:.85rem;font-family:monospace}
+
+/* ── APP SHELL ── */
+#appShell{display:none;height:100%;flex-direction:column}
+#appShell.visible{display:flex}
+
+/* ── HEADER ── */
+.app-header{
+  background:var(--ink);color:var(--cream);
+  height:var(--header-h);
+  padding:0 20px;
+  padding-top:env(safe-area-inset-top);
+  height:calc(var(--header-h) + env(safe-area-inset-top));
+  display:flex;align-items:flex-end;justify-content:space-between;
+  padding-bottom:10px;
+  flex-shrink:0;
+  position:relative;z-index:10;
+  box-shadow:0 1px 0 rgba(255,255,255,.07)
+}
+.app-logo{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;letter-spacing:-.02em}
+.app-logo span{color:var(--tcl);font-style:italic}
+.header-right{display:flex;align-items:center;gap:12px}
+.sync-indicator{font-size:.72rem;color:rgba(250,247,242,.4);display:flex;align-items:center;gap:5px}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--sage)}
 .sync-dot.syncing{background:var(--gold);animation:pdot .8s infinite}
 .sync-dot.error{background:#E74C3C}
 @keyframes pdot{0%,100%{opacity:1}50%{opacity:.3}}
+.user-avatar{width:32px;height:32px;border-radius:50%;border:2px solid rgba(255,255,255,.2);object-fit:cover;cursor:pointer}
+.user-initials{width:32px;height:32px;border-radius:50%;background:var(--tc);color:white;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;cursor:pointer}
+.user-menu{position:absolute;top:calc(var(--header-h) + env(safe-area-inset-top));right:16px;background:var(--ww);border-radius:var(--rs);box-shadow:0 8px 40px rgba(28,26,23,.18);border:1px solid var(--border);padding:8px 0;z-index:200;min-width:200px;display:none}
+.user-menu.open{display:block}
+.user-menu-item{padding:13px 18px;font-size:.95rem;cursor:pointer;color:var(--ink)}
+.user-menu-item:active{background:var(--cream)}
+.user-menu-name{padding:12px 18px 8px;font-weight:600;font-size:.85rem;color:var(--il);border-bottom:1px solid var(--border);margin-bottom:4px}
 
-nav{background:var(--ww);border-bottom:1px solid var(--border);display:flex;padding:0 20px;gap:4px;overflow-x:auto;scrollbar-width:none}
-nav::-webkit-scrollbar{display:none}
-.nav-tab{background:none;border:none;padding:14px 16px 12px;font-family:'DM Sans',sans-serif;font-size:.875rem;font-weight:500;color:var(--il);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all .2s}
-.nav-tab.active{color:var(--tc);border-bottom-color:var(--tc)}
+/* ── SCROLLABLE CONTENT ── */
+.app-content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.section{display:none;padding:20px 20px calc(var(--tab-h) + 20px);max-width:640px;margin:0 auto}
+.section.active{display:block}
 
-main{padding:20px;max-width:640px;margin:0 auto}
-.section{display:none}.section.active{display:block}
+/* ── BOTTOM TAB BAR ── */
+.tab-bar{
+  height:calc(var(--tab-h) + env(safe-area-inset-bottom));
+  padding-bottom:env(safe-area-inset-bottom);
+  background:var(--ww);
+  border-top:1px solid var(--border);
+  display:flex;
+  flex-shrink:0;
+  box-shadow:0 -4px 20px rgba(28,26,23,.06)
+}
+.tab-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;border:none;background:none;cursor:pointer;
+  color:var(--il);font-family:'DM Sans',sans-serif;
+  font-size:.72rem;font-weight:500;padding:8px 4px;
+  transition:color .15s;position:relative
+}
+.tab-btn.active{color:var(--tc)}
+.tab-icon{font-size:1.5rem;line-height:1;transition:transform .15s}
+.tab-btn.active .tab-icon{transform:scale(1.1)}
+.tab-label{text-transform:uppercase;letter-spacing:.06em;font-size:.65rem;font-weight:600}
 
-/* Cards */
+/* ── SECTION HEADERS ── */
+.page-title{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;margin-bottom:4px;letter-spacing:-.01em}
+.page-sub{color:var(--il);font-size:.9rem;margin-bottom:20px}
+
+/* ── CARDS ── */
 .card{background:var(--ww);border-radius:var(--r);padding:20px;margin-bottom:14px;box-shadow:var(--sh);border:1px solid var(--border)}
-.recipe-card{background:var(--ww);border-radius:var(--r);margin-bottom:12px;box-shadow:var(--sh);border:1px solid var(--border);overflow:hidden;cursor:pointer;transition:transform .15s}
-.recipe-card:active{transform:scale(.98)}
-.recipe-card-body{padding:16px 18px}
-.recipe-name{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:500;margin-bottom:4px}
-.recipe-meta{font-size:.8rem;color:var(--il);display:flex;gap:12px;flex-wrap:wrap}
-.tag{display:inline-block;background:var(--tcp);color:var(--tc);border-radius:20px;padding:2px 10px;font-size:.75rem;font-weight:500;margin:2px 2px 0 0}
+.card-dark{background:var(--ink);color:var(--cream);border-color:transparent}
 
-/* Empty */
-.empty-state{text-align:center;padding:48px 20px;color:var(--il)}
-.empty-state .icon{font-size:3rem;margin-bottom:14px}
-.empty-state h3{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--ink);margin-bottom:8px}
-.empty-state p{font-size:.9rem;line-height:1.6}
+/* ── RECIPE CARDS ── */
+.recipe-card{background:var(--ww);border-radius:var(--r);margin-bottom:10px;box-shadow:var(--sh);border:1px solid var(--border);overflow:hidden;cursor:pointer;transition:transform .12s,box-shadow .12s;display:flex;align-items:stretch}
+.recipe-card:active{transform:scale(.98);box-shadow:none}
+.recipe-card-accent{width:5px;flex-shrink:0;background:var(--tc);opacity:.35}
+.recipe-card-body{padding:16px 18px;flex:1;min-width:0}
+.recipe-name{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:500;margin-bottom:5px;line-height:1.3}
+.recipe-meta{font-size:.82rem;color:var(--il);display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.tag{display:inline-block;background:var(--tcp);color:var(--tc);border-radius:20px;padding:3px 10px;font-size:.75rem;font-weight:600;margin:2px 2px 0 0}
 
-/* Buttons */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 22px;border-radius:var(--rs);border:none;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:500;cursor:pointer;transition:all .2s;width:100%}
-.btn-primary{background:var(--tc);color:white}.btn-primary:hover{background:var(--tcl)}
+/* ── SEARCH ── */
+.search-bar{position:relative;margin-bottom:18px}
+.search-bar input{width:100%;padding:13px 16px 13px 44px;border:1.5px solid var(--border);border-radius:50px;font-family:'DM Sans',sans-serif;font-size:1rem;background:var(--ww);color:var(--ink);-webkit-appearance:none}
+.search-bar input:focus{outline:none;border-color:var(--tc)}
+.search-bar::before{content:'🔍';position:absolute;left:15px;top:50%;transform:translateY(-50%);font-size:.9rem;pointer-events:none}
+.recipe-count-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.recipe-count-label{font-size:.85rem;color:var(--il)}
+.recipe-count-num{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--tc)}
+
+/* ── FAB ── */
+.fab{
+  position:fixed;
+  bottom:calc(var(--tab-h) + env(safe-area-inset-bottom) + 16px);
+  right:20px;
+  width:56px;height:56px;
+  background:var(--tc);color:white;
+  border:none;border-radius:50%;
+  font-size:1.8rem;font-weight:300;
+  cursor:pointer;
+  box-shadow:0 4px 20px rgba(196,98,58,.5);
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .15s,box-shadow .15s;
+  z-index:100
+}
+.fab:active{transform:scale(.92);box-shadow:0 2px 10px rgba(196,98,58,.4)}
+
+/* ── ADD SHEET (bottom sheet over cookbook) ── */
+.sheet-overlay{position:fixed;inset:0;background:rgba(28,26,23,.5);z-index:200;display:none;backdrop-filter:blur(3px)}
+.sheet-overlay.open{display:block}
+.add-sheet{
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--ww);
+  border-radius:24px 24px 0 0;
+  max-height:94vh;overflow-y:auto;
+  z-index:201;
+  transform:translateY(100%);
+  transition:transform .3s cubic-bezier(.32,.72,0,1);
+  padding-bottom:calc(20px + env(safe-area-inset-bottom));
+  max-width:640px;margin:0 auto
+}
+.add-sheet.open{transform:translateY(0)}
+.sheet-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:14px auto 0}
+.sheet-header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 16px;border-bottom:1px solid var(--border)}
+.sheet-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:500}
+.sheet-close{background:var(--cream);border:none;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;color:var(--il)}
+.sheet-body{padding:20px}
+
+/* ── ADD TABS ── */
+.add-tab-bar{display:flex;gap:6px;background:var(--cream);border:1px solid var(--border);border-radius:10px;padding:4px;margin-bottom:20px}
+.add-tab{flex:1;background:none;border:none;border-radius:7px;padding:10px 6px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:500;color:var(--il);cursor:pointer;transition:all .15s;white-space:nowrap}
+.add-tab.active{background:var(--tc);color:white;font-weight:600}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:15px 22px;border-radius:var(--rs);border:none;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:600;cursor:pointer;transition:all .15s;width:100%}
+.btn:active{transform:scale(.98)}
+.btn-primary{background:var(--tc);color:white}
+.btn-primary:active{background:var(--tcl)}
 .btn-secondary{background:var(--tcp);color:var(--tc)}
-.btn-ghost{background:transparent;color:var(--il);border:1px solid var(--border)}.btn-ghost:hover{background:var(--cream)}
+.btn-ghost{background:transparent;color:var(--il);border:1.5px solid var(--border)}
 .btn-danger{background:#FDE8E8;color:#C0392B}
-.btn-sm{padding:8px 14px;font-size:.82rem;width:auto;border-radius:8px}
+.btn-sm{padding:10px 16px;font-size:.88rem;width:auto;border-radius:9px}
+
+/* ── FORMS ── */
+.form-group{margin-bottom:18px}
+label{display:block;font-size:.82rem;font-weight:600;color:var(--il);margin-bottom:7px;text-transform:uppercase;letter-spacing:.05em}
+input,textarea,select{width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:1rem;background:var(--ww);color:var(--ink);transition:border-color .2s;-webkit-appearance:none}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--tc)}
+textarea{resize:vertical;min-height:90px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ingredient-row{display:grid;grid-template-columns:2fr 1fr 1.4fr 38px;gap:8px;align-items:center;margin-bottom:10px}
+.ingredient-row input{margin:0;padding:11px 12px}
+.remove-btn{background:#FDE8E8;border:none;border-radius:9px;width:38px;height:38px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#C0392B;font-size:1.1rem;flex-shrink:0}
+
+/* ── RECIPE MODAL (full-height sheet) ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(28,26,23,.55);z-index:300;backdrop-filter:blur(4px);align-items:flex-end;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--ww);border-radius:24px 24px 0 0;padding:0 0 calc(20px + env(safe-area-inset-bottom));width:100%;max-width:640px;max-height:94vh;overflow-y:auto;animation:slideUp .3s cubic-bezier(.32,.72,0,1)}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:20px 20px 18px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--ww);z-index:1}
+.modal-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:500;padding-right:12px;line-height:1.3}
+.close-btn{background:var(--cream);border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;color:var(--il);flex-shrink:0}
+#modalBody{padding:20px}
+
+/* ── PORTION SCALER ── */
+.portion-scaler{display:flex;align-items:center;gap:14px;background:var(--tcp);border-radius:var(--rs);padding:14px 18px;margin-bottom:18px}
+.portion-scaler label{margin:0;font-size:.9rem;color:var(--tc);flex:1;font-weight:600}
+.scaler-controls{display:flex;align-items:center;gap:14px}
+.scaler-btn{background:var(--tc);color:white;border:none;width:34px;height:34px;border-radius:50%;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.scaler-count{font-weight:700;font-size:1.2rem;min-width:28px;text-align:center}
+
+/* ── RECIPE DETAIL ── */
+.recipe-detail-section{margin-bottom:22px}
+.recipe-detail-section h4{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--il);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.ingredient-list{list-style:none}
+.ingredient-list li{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:.95rem}
+.ingredient-list li:last-child{border-bottom:none}
+.ing-amount{color:var(--tc);font-weight:600;font-size:.9rem}
+.steps-list{list-style:none;counter-reset:steps}
+.steps-list li{counter-increment:steps;padding:12px 0 12px 44px;position:relative;border-bottom:1px solid var(--border);font-size:.95rem;line-height:1.65}
+.steps-list li::before{content:counter(steps);position:absolute;left:0;top:12px;background:var(--tc);color:white;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700}
+.steps-list li:last-child{border-bottom:none}
+
+/* ── PLANNER ── */
+.planner-header{background:var(--ink);color:var(--cream);border-radius:var(--r);padding:18px 20px;margin-bottom:16px}
+.planner-week{font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:12px}
+.planner-controls{display:flex;gap:10px;align-items:center}
+.planner-select{background:rgba(255,255,255,.12);color:var(--cream);border:1px solid rgba(255,255,255,.2);border-radius:9px;padding:9px 12px;font-size:.9rem;font-family:'DM Sans',sans-serif;flex:1;-webkit-appearance:none}
+.planner-random{background:rgba(255,255,255,.12);color:var(--cream);border:1px solid rgba(255,255,255,.2);border-radius:9px;padding:9px 16px;font-size:.9rem;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;white-space:nowrap}
+.planner-clear{background:none;border:none;color:rgba(250,247,242,.35);font-size:.8rem;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:10px;padding:4px 0}
+.picker-item{background:var(--ww);border-radius:var(--r);border:1.5px solid var(--border);box-shadow:var(--sh);margin-bottom:10px;padding:16px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:border-color .15s,background .15s}
+.picker-item.selected{border-color:var(--tc);background:var(--tcp)}
+.picker-check{width:26px;height:26px;border:2px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.8rem;color:white;transition:all .15s}
+.picker-item.selected .picker-check{background:var(--tc);border-color:var(--tc)}
+.picker-item-name{font-family:'Playfair Display',serif;font-size:1rem;font-weight:500;margin-bottom:2px;line-height:1.3}
+.picker-item-meta{font-size:.8rem;color:var(--il);margin-top:2px}
+
+/* ── SHOPPING ── */
+.shop-item{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border);font-size:.95rem;transition:opacity .2s}
+.shop-item.excluded{opacity:.3}
+.shop-item input[type=checkbox]{width:20px;height:20px;accent-color:var(--tc);flex-shrink:0;cursor:pointer}
+.shop-item-name{flex:1;cursor:pointer;font-size:.95rem}
+.shop-item-qty{font-weight:700;color:var(--tc);font-size:.88rem;white-space:nowrap}
+.buy-summary{font-size:.85rem;color:var(--il);padding:10px 0;border-top:1px solid var(--border);margin-top:4px}
+
+/* ── SETTINGS ── */
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border)}
+.settings-row:last-child{border-bottom:none}
+.settings-label{font-size:.95rem;font-weight:500}
+.settings-sub{font-size:.82rem;color:var(--il);margin-top:2px}
+.share-banner{background:linear-gradient(135deg,#B85530,var(--tc));border-radius:var(--r);padding:22px;margin-bottom:14px;color:white}
+.share-banner h4{font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:6px}
+.share-banner p{font-size:.88rem;opacity:.85;margin-bottom:16px;line-height:1.5}
+.share-how{background:rgba(0,0,0,.15);border-radius:10px;padding:14px 16px;margin-top:14px}
+.share-how p{font-size:.82rem;font-weight:600;margin-bottom:8px;opacity:.9}
+.share-how ol{padding-left:18px;font-size:.82rem;opacity:.8;line-height:1.9}
+.share-how code{background:rgba(255,255,255,.2);border-radius:4px;padding:1px 5px;font-size:.8rem;font-family:monospace}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:calc(var(--tab-h) + env(safe-area-inset-bottom) + 12px);left:50%;transform:translateX(-50%) translateY(16px);background:var(--ink);color:var(--cream);padding:12px 22px;border-radius:50px;font-size:.9rem;opacity:0;transition:all .25s;z-index:500;pointer-events:none;white-space:nowrap;box-shadow:0 4px 20px rgba(28,26,23,.3)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── EMPTY STATES ── */
+.empty-state{text-align:center;padding:60px 20px;color:var(--il)}
+.empty-state .icon{font-size:3.5rem;margin-bottom:16px}
+.empty-state h3{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--ink);margin-bottom:10px}
+.empty-state p{font-size:.95rem;line-height:1.65}
+
+/* ── MISC ── */
+.divider{border:none;border-top:1px solid var(--border);margin:18px 0}
+.text-muted{color:var(--il);font-size:.88rem}
+.badge{display:inline-block;background:var(--tc);color:white;border-radius:50px;padding:2px 10px;font-size:.78rem;font-weight:700}
+.spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite}
 .btn-record{background:var(--ink);color:white;border-radius:50px;padding:16px 28px;font-size:1rem}
 .btn-record.recording{background:#C0392B;animation:pulse 1.2s infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(192,57,43,.4)}50%{box-shadow:0 0 0 10px rgba(192,57,43,0)}}
-
-/* Forms */
-.form-group{margin-bottom:16px}
-label{display:block;font-size:.82rem;font-weight:500;color:var(--il);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
-input,textarea,select{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:.95rem;background:var(--ww);color:var(--ink);transition:border-color .2s;-webkit-appearance:none}
-input:focus,textarea:focus,select:focus{outline:none;border-color:var(--tc)}
-textarea{resize:vertical;min-height:80px}
-
-/* Dictation */
-.dictation-area{background:var(--ink);border-radius:var(--r);padding:20px;margin-bottom:16px;text-align:center}
-.dictation-area h3{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--cream);margin-bottom:6px}
-.dictation-area p{font-size:.82rem;color:rgba(250,247,242,.6);margin-bottom:16px}
-.transcript-box{background:rgba(255,255,255,.08);border-radius:var(--rs);padding:12px;min-height:60px;color:var(--cream);font-size:.9rem;text-align:left;margin-bottom:14px;border:1px solid rgba(255,255,255,.1);font-style:italic}
+.transcript-box{background:rgba(255,255,255,.08);border-radius:var(--rs);padding:14px;min-height:70px;color:var(--cream);font-size:.95rem;text-align:left;margin-bottom:16px;border:1px solid rgba(255,255,255,.1);font-style:italic}
 .transcript-box.placeholder{color:rgba(250,247,242,.35)}
-
-/* Ingredient rows */
-.ingredient-row{display:grid;grid-template-columns:2fr 1fr 1.5fr 36px;gap:8px;align-items:center;margin-bottom:8px}
-.ingredient-row input{margin:0}
-.remove-btn{background:#FDE8E8;border:none;border-radius:8px;width:36px;height:36px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#C0392B;font-size:1rem;flex-shrink:0}
-
-/* Modal */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(28,26,23,.6);z-index:200;backdrop-filter:blur(4px);align-items:flex-end;justify-content:center}
-.modal-overlay.open{display:flex}
-.modal{background:var(--ww);border-radius:var(--r) var(--r) 0 0;padding:24px 20px 36px;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;animation:slideUp .3s ease}
-@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--border)}
-.modal-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:500}
-.close-btn{background:var(--cream);border:none;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;color:var(--il)}
-
-/* Spinner */
-.spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* Recipe detail */
-.recipe-detail-section{margin-bottom:20px}
-.recipe-detail-section h4{font-size:.78rem;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--il);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
-.ingredient-list{list-style:none}
-.ingredient-list li{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:.92rem}
-.ingredient-list li:last-child,.steps-list li:last-child,.shop-item:last-child,.staple-item:last-child{border-bottom:none}
-.ing-amount{color:var(--tc);font-weight:500;font-size:.85rem}
-.steps-list{list-style:none;counter-reset:steps}
-.steps-list li{counter-increment:steps;padding:10px 0 10px 36px;position:relative;border-bottom:1px solid var(--border);font-size:.92rem;line-height:1.6}
-.steps-list li::before{content:counter(steps);position:absolute;left:0;top:10px;background:var(--tc);color:white;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700}
-
-/* Portion scaler */
-.portion-scaler{display:flex;align-items:center;gap:14px;background:var(--tcp);border-radius:var(--rs);padding:12px 16px;margin-bottom:16px}
-.portion-scaler label{margin:0;font-size:.85rem;color:var(--tc);flex:1}
-.scaler-controls{display:flex;align-items:center;gap:10px}
-.scaler-btn{background:var(--tc);color:white;border:none;width:30px;height:30px;border-radius:50%;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.scaler-count{font-weight:700;font-size:1.1rem;min-width:24px;text-align:center}
-
-/* FAB / Toast */
-.fab{position:fixed;bottom:24px;right:20px;width:58px;height:58px;background:var(--tc);color:white;border:none;border-radius:50%;font-size:1.6rem;cursor:pointer;box-shadow:0 4px 20px rgba(196,98,58,.45);display:flex;align-items:center;justify-content:center;transition:transform .2s;z-index:150}
-.fab:active{transform:scale(.93)}
-.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--cream);padding:10px 20px;border-radius:50px;font-size:.85rem;opacity:0;transition:all .3s;z-index:300;pointer-events:none;white-space:nowrap}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
-/* Utility */
-.divider{border:none;border-top:1px solid var(--border);margin:16px 0}
-.text-muted{color:var(--il);font-size:.85rem}
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.section-title{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:500;margin-bottom:4px}
-.section-sub{color:var(--il);font-size:.85rem;margin-bottom:20px}
-.badge{display:inline-block;background:var(--tc);color:white;border-radius:50px;padding:2px 9px;font-size:.75rem;font-weight:700;margin-left:6px}
-
-/* Loading */
-#loadingOverlay{position:fixed;inset:0;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:500;color:var(--cream)}
-#loadingOverlay .logo{font-size:2.5rem;margin-bottom:24px}
-.loading-spinner{width:32px;height:32px;border:3px solid rgba(250,247,242,.2);border-top-color:var(--tcl);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:14px}
-#loadingOverlay p{color:rgba(250,247,242,.5);font-size:.85rem}
-
-/* User menu */
-.user-menu{position:absolute;top:60px;right:16px;background:var(--ww);border-radius:var(--rs);box-shadow:0 8px 40px rgba(28,26,23,.14);border:1px solid var(--border);padding:8px 0;z-index:200;min-width:200px;display:none}
-.user-menu.open{display:block}
-.user-menu-item{padding:10px 16px;font-size:.9rem;cursor:pointer;color:var(--ink)}
-.user-menu-item:hover{background:var(--cream)}
-.user-menu-name{padding:10px 16px 6px;font-weight:600;font-size:.85rem;color:var(--il);border-bottom:1px solid var(--border);margin-bottom:4px}
-
-/* Add tabs */
-.add-tab{flex:1;background:none;border:none;border-radius:6px;padding:9px 6px;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:500;color:var(--il);cursor:pointer;transition:all .15s;white-space:nowrap}
-.add-tab.active{background:var(--tc);color:white}
-
-/* Planner picker */
-.picker-item{background:var(--ww);border-radius:var(--r);border:1.5px solid var(--border);box-shadow:var(--sh);margin-bottom:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:border-color .15s,background .15s}
-.picker-item.selected{border-color:var(--tc);background:var(--tcp)}
-.picker-item.at-limit{opacity:.45;cursor:not-allowed}
-.picker-check{width:24px;height:24px;border:2px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.75rem;color:white;transition:all .15s}
-.picker-item.selected .picker-check{background:var(--tc);border-color:var(--tc)}
-.picker-item-info{flex:1;min-width:0}
-.picker-item-name{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.picker-item-meta{font-size:.75rem;color:var(--il);margin-top:2px}
-
-/* Shopping */
-.shop-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:.9rem}
-.shop-item-name{flex:1}
-.shop-item-qty{font-weight:600;color:var(--tc);font-size:.85rem;margin-left:12px;white-space:nowrap}
-.staple-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:.9rem}
-.staple-item input[type=checkbox]{width:18px;height:18px;accent-color:var(--tc);flex-shrink:0}
-.staple-item label{flex:1;cursor:pointer}
-.staple-item .shop-item-qty{color:var(--il)}
-
-/* ── WELCOME SCREEN ── */
-#welcomeScreen{min-height:100vh;background:var(--ink);display:none;flex-direction:column;align-items:center;overflow-y:auto}
-.w-inner{width:100%;max-width:480px;padding:0 20px 60px}
-.w-hero{text-align:center;padding:52px 0 36px}
-.w-logo{font-family:'Playfair Display',serif;font-size:3rem;font-weight:700;color:var(--cream);letter-spacing:-.02em;margin-bottom:10px}
-.w-logo span{color:var(--tcl);font-style:italic}
-.w-tagline{color:rgba(250,247,242,.55);font-size:.95rem;font-weight:300;line-height:1.6}
-.w-steps{display:flex;flex-direction:column;gap:0;margin:32px 0 40px}
-.w-step{display:flex;gap:16px;align-items:flex-start;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.08)}
-.w-step:last-child{border-bottom:none}
-.w-step-icon{font-size:1.4rem;flex-shrink:0;width:36px;text-align:center;margin-top:2px}
-.w-step-body strong{display:block;color:var(--cream);font-size:.95rem;margin-bottom:3px}
-.w-step-body span{color:rgba(250,247,242,.5);font-size:.83rem;line-height:1.5}
-.w-divider{display:flex;align-items:center;gap:12px;color:rgba(250,247,242,.25);font-size:.8rem;margin:8px 0}
-.w-divider::before,.w-divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.1)}
-.w-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:var(--r);padding:22px;margin-bottom:12px}
-.w-card h3{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--cream);margin-bottom:6px}
-.w-card p{font-size:.85rem;color:rgba(250,247,242,.55);margin-bottom:18px;line-height:1.6}
-.w-card .hint{font-size:.78rem;color:rgba(250,247,242,.35);margin-top:12px;line-height:1.5;text-align:center}
-.w-google-btn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:14px 20px;background:white;border:none;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:500;cursor:pointer;transition:all .2s;color:var(--ink)}
-.w-google-btn:hover{opacity:.92;transform:translateY(-1px)}
-.w-google-btn:active{transform:translateY(0)}
-
-/* ── JOIN MODAL ── */
-.setup-modal{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;display:none;align-items:center;justify-content:center;padding:20px}
-.setup-modal.open{display:flex}
-.setup-box{background:var(--ww);border-radius:var(--r);padding:28px 24px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(28,26,23,.4);max-height:90vh;overflow-y:auto}
-.setup-box h3{font-family:'Playfair Display',serif;font-size:1.3rem;margin-bottom:8px}
-.setup-box>p{font-size:.88rem;color:var(--il);margin-bottom:20px;line-height:1.6}
-.drive-steps{list-style:none;margin-bottom:20px;background:var(--cream);border-radius:var(--rs);padding:16px}
-.drive-steps li{display:flex;gap:12px;font-size:.85rem;padding:8px 0;border-bottom:1px solid var(--border);line-height:1.5;align-items:flex-start}
-.drive-steps li:last-child{border-bottom:none;padding-bottom:0}
-.drive-steps li .ds-num{background:var(--tc);color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;flex-shrink:0;margin-top:1px}
-.drive-steps code{background:rgba(196,98,58,.12);color:var(--tc);border-radius:4px;padding:1px 5px;font-size:.82rem;font-family:monospace}
-
-/* ── SHARE BANNER ── */
-.share-banner{background:linear-gradient(135deg,#B85530,var(--tc));border-radius:var(--r);padding:20px;margin-bottom:14px;color:white}
-.share-banner h4{font-family:'Playfair Display',serif;font-size:1.05rem;margin-bottom:4px}
-.share-banner p{font-size:.82rem;opacity:.85;margin-bottom:14px;line-height:1.5}
-.share-banner .btn{background:white;color:var(--tc);font-weight:600}
-.share-how{background:var(--cream);border-radius:var(--rs);padding:14px 16px;margin-top:14px}
-.share-how p{font-size:.82rem;font-weight:600;color:var(--ink);margin-bottom:8px}
-.share-how ol{padding-left:18px;font-size:.82rem;color:var(--il);line-height:1.8}
-.share-how ol li{padding-left:4px}
-.share-how code{background:rgba(196,98,58,.12);color:var(--tc);border-radius:4px;padding:1px 5px;font-size:.8rem;font-family:monospace}
 </style>
 </head>
 <body>
 
+<!-- LOADING -->
 <div id="loadingOverlay">
-  <div class="logo" style="font-family:'Playfair Display',serif;font-weight:700">Meal<span>Flow</span></div>
+  <div class="loading-logo">Meal<span>Flow</span></div>
   <div class="loading-spinner"></div>
   <p id="loadingMsg">Loading…</p>
 </div>
 
-<!-- WELCOME / ONBOARDING SCREEN -->
+<!-- WELCOME -->
 <div id="welcomeScreen">
   <div class="w-inner">
     <div class="w-hero">
       <div class="w-logo">Meal<span>Flow</span></div>
       <div class="w-tagline">Your household cookbook &amp; weekly meal planner</div>
     </div>
-
     <div class="w-steps">
-      <div class="w-step">
-        <div class="w-step-icon">📖</div>
-        <div class="w-step-body"><strong>Build your cookbook</strong><span>Add recipes using AI or manually. Saves to your Google Drive.</span></div>
-      </div>
-      <div class="w-step">
-        <div class="w-step-icon">📅</div>
-        <div class="w-step-body"><strong>Plan your week</strong><span>Pick meals, build a shopping list, and send it to Ocado.</span></div>
-      </div>
-      <div class="w-step">
-        <div class="w-step-icon">🏠</div>
-        <div class="w-step-body"><strong>Share with your household</strong><span>Invite a partner or family member to use the same cookbook.</span></div>
-      </div>
+      <div class="w-step"><div class="w-step-icon">📖</div><div class="w-step-body"><strong>Build your cookbook</strong><span>Add recipes using AI or manually. Saves to your Google Drive.</span></div></div>
+      <div class="w-step"><div class="w-step-icon">📅</div><div class="w-step-body"><strong>Plan your week</strong><span>Pick meals, build a shopping list, and send it to Ocado.</span></div></div>
+      <div class="w-step"><div class="w-step-icon">🏠</div><div class="w-step-body"><strong>Share with your household</strong><span>Invite a partner or family member to use the same cookbook.</span></div></div>
     </div>
-
     <div class="w-card">
       <h3>Start or continue your cookbook</h3>
-      <p>Sign in with Google to create your cookbook. Your recipes are saved to your private Google Drive — only people you invite can see them. If you already have a cookbook, signing in will reconnect you automatically.</p>
-      <button class="w-google-btn" id="signInNewBtn"><svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Sign in with Google</button>
+      <p>Sign in with Google to create your cookbook. Saves privately to your Google Drive — only people you invite can see it.</p>
+      <button class="w-google-btn" id="signInNewBtn">
+        <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Sign in with Google
+      </button>
+      <p class="hint">Already have a cookbook? Signing in reconnects you automatically.</p>
     </div>
-
     <div class="w-divider">or</div>
-
     <div class="w-card">
       <h3>Join someone's cookbook</h3>
-      <p>Someone has shared their MealFlow cookbook with you. Sign in below and you'll be asked to paste the shared folder link they sent you.</p>
-      <button class="w-google-btn" id="signInJoinBtn"><svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Sign in &amp; join a cookbook</button>
-      <p class="hint">You'll need the sharing link from the person who owns the cookbook</p>
+      <p>Someone's shared their MealFlow cookbook with you. Sign in and paste the folder link they sent you.</p>
+      <button class="w-google-btn" id="signInJoinBtn">
+        <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Sign in &amp; join a cookbook
+      </button>
+      <p class="hint">You'll need the sharing link from the cookbook owner</p>
     </div>
   </div>
 </div>
 
-<!-- JOIN HOUSEHOLD MODAL -->
+<!-- JOIN MODAL -->
 <div class="setup-modal" id="joinModal">
   <div class="setup-box">
+    <div style="width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px"></div>
     <h3>🔗 Join a shared cookbook</h3>
-    <p>First, the cookbook owner needs to share their MealFlow folder with you on Google Drive. Here's exactly how:</p>
+    <p>The cookbook owner needs to share their MealFlow folder with you first:</p>
     <ul class="drive-steps">
-      <li><div class="ds-num">1</div><div>The cookbook owner opens MealFlow → <strong>Settings</strong> → taps <strong>"Copy sharing link"</strong></div></li>
-      <li><div class="ds-num">2</div><div>They send you that link — via WhatsApp, text, or email</div></li>
-      <li><div class="ds-num">3</div><div>Open that link on your phone or laptop. In Google Drive, tap <code>Add shortcut to Drive</code> or just make sure you can see the folder</div></li>
+      <li><div class="ds-num">1</div><div>Cookbook owner opens MealFlow → <strong>Settings</strong> → taps <strong>Copy sharing link</strong></div></li>
+      <li><div class="ds-num">2</div><div>They send you the link via WhatsApp or text</div></li>
+      <li><div class="ds-num">3</div><div>Open that link → Google Drive → tap <code>Add shortcut to Drive</code></div></li>
       <li><div class="ds-num">4</div><div>Come back here and paste the link below</div></li>
     </ul>
-    <div class="form-group">
-      <label>Paste the shared folder link</label>
-      <input type="url" id="joinFolderUrl" placeholder="https://drive.google.com/drive/folders/…">
-    </div>
-    <div style="display:flex;gap:8px;margin-top:4px">
+    <div class="form-group"><label>Paste the shared folder link</label><input type="url" id="joinFolderUrl" placeholder="https://drive.google.com/drive/folders/…"></div>
+    <div style="display:flex;gap:10px;margin-top:4px">
       <button class="btn btn-ghost" id="joinCancelBtn" style="flex:1">Back</button>
       <button class="btn btn-primary" id="joinConfirmBtn" style="flex:1">Connect</button>
     </div>
-    <div id="joinError" style="display:none;margin-top:10px;padding:10px;background:#FDE8E8;border-radius:8px;font-size:.82rem;color:#C0392B"></div>
+    <div id="joinError" style="display:none;margin-top:12px;padding:12px;background:#FDE8E8;border-radius:10px;font-size:.88rem;color:#C0392B"></div>
   </div>
 </div>
 
-<div id="loginScreen" style="display:none"></div>
-
+<!-- APP SHELL -->
 <div id="appShell">
-  <header>
-    <div class="logo">Meal<span>Flow</span></div>
+
+  <!-- HEADER -->
+  <header class="app-header">
+    <div class="app-logo">Meal<span>Flow</span></div>
     <div class="header-right">
       <div class="sync-indicator"><div class="sync-dot" id="syncDot"></div><span id="syncLabel">Synced</span></div>
       <div style="position:relative">
-        <div id="userAvatarContainer" onclick="toggleUserMenu()"></div>
+        <div id="userAvatarContainer"></div>
         <div class="user-menu" id="userMenu">
           <div class="user-menu-name" id="userMenuName"></div>
           <div class="user-menu-item" onclick="exportData()">⬇ Export Backup</div>
@@ -325,79 +390,210 @@ textarea{resize:vertical;min-height:80px}
     <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
   </header>
 
-  <nav>
-    <button class="nav-tab active" onclick="showSection('cookbook',this)">📖 Cookbook</button>
-    <button class="nav-tab" onclick="showSection('add',this)">✨ Add</button>
-    <button class="nav-tab" onclick="showSection('planner',this);initPlanner()">📅 Planner</button>
-    <button class="nav-tab" onclick="showSection('shopping',this)">🛒 Shopping</button>
-    <button class="nav-tab" onclick="showSection('settings',this)">⚙️ Settings</button>
-  </nav>
+  <!-- SCROLLABLE CONTENT -->
+  <div class="app-content">
 
-  <main>
     <!-- COOKBOOK -->
     <section id="cookbook" class="section active">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-        <h1 class="section-title">My Cookbook</h1><span id="recipeCount" class="badge">0</span>
+      <div class="recipe-count-row">
+        <div>
+          <div class="page-title">Cookbook</div>
+          <div class="page-sub">Your batch-cook favourites</div>
+        </div>
+        <span id="recipeCount" class="badge">0</span>
       </div>
-      <p class="section-sub">Your shared batch-cook favourites</p>
-      <input type="text" id="searchInput" placeholder="🔍  Search recipes…" oninput="renderCookbook()" style="margin-bottom:16px">
+      <div class="search-bar"><input type="text" id="searchInput" placeholder="Search recipes…" oninput="renderCookbook()"></div>
       <div id="recipeList"></div>
     </section>
 
-    <!-- ADD RECIPE -->
-    <section id="add" class="section">
-      <h1 class="section-title">Add Recipe</h1>
-      <div style="display:flex;gap:6px;margin-bottom:18px;background:var(--ww);border:1px solid var(--border);border-radius:var(--rs);padding:4px">
-        <button class="add-tab active" id="addTab_ai" onclick="switchAddTab('ai')">🤖 Add via AI</button>
-        <button class="add-tab" id="addTab_json" onclick="switchAddTab('json')">📋 Paste JSON</button>
-        <button class="add-tab" id="addTab_manual" onclick="switchAddTab('manual')">✏️ Manual</button>
+    <!-- PLANNER -->
+    <section id="planner" class="section">
+      <div class="page-title">This Week</div>
+      <div class="page-sub" style="margin-bottom:16px">Tick meals to plan your week</div>
+      <div class="planner-header">
+        <div class="planner-week">Week of <span id="weekLabel"></span></div>
+        <div class="planner-controls">
+          <select id="recipeCountPicker" class="planner-select" onchange="onRecipeCountChange()">
+            <option value="1">1 meal</option><option value="2">2 meals</option><option value="3">3 meals</option><option value="4" selected>4 meals</option>
+            <option value="5">5 meals</option><option value="6">6 meals</option><option value="7">7 meals</option>
+          </select>
+          <button class="planner-random" onclick="suggestPlan()">🔀 Random</button>
+        </div>
+        <button class="planner-clear" onclick="clearPlanSelections()">Clear all</button>
       </div>
+      <button class="btn btn-primary" onclick="approvePlan()" style="margin-bottom:14px">✅ Build Shopping List</button>
+      <div id="plannerPickerList"></div>
+    </section>
 
-      <div id="addPane_ai">
-        <p class="section-sub" style="margin-top:-10px">Use free AI to convert any recipe — no account needed</p>
-        <div class="card" style="background:var(--ink);color:var(--cream)">
-          <div style="font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:6px">How it works</div>
-          <div class="welcome-steps" style="margin-bottom:0">
-            <div class="welcome-step"><div class="step-num" style="background:var(--tc)">1</div><div class="step-text" style="color:rgba(250,247,242,.8)">Copy the prompt below, then open Claude AI in a new tab</div></div>
-            <div class="welcome-step"><div class="step-num" style="background:var(--tc)">2</div><div class="step-text" style="color:rgba(250,247,242,.8)">Paste the prompt, then paste or type your recipe after it</div></div>
-            <div class="welcome-step"><div class="step-num" style="background:var(--tc)">3</div><div class="step-text" style="color:rgba(250,247,242,.8)">Copy the JSON it gives back, come here and tap Paste JSON tab</div></div>
-          </div>
+    <!-- SHOPPING -->
+    <section id="shopping" class="section">
+      <div class="page-title">Shopping</div>
+      <div id="shoppingEmpty" class="empty-state" style="padding-top:40px">
+        <div class="icon">🛒</div>
+        <h3>No list yet</h3>
+        <p>Approve a meal plan in<br><strong>This Week</strong> to generate your list.</p>
+      </div>
+      <div id="shoppingContent" style="display:none">
+        <div class="card card-dark" style="margin-bottom:14px">
+          <div style="font-family:'Playfair Display',serif;font-size:1rem;margin-bottom:6px">This week's meals</div>
+          <div id="shoppingRecipeList" style="font-size:.88rem;opacity:.6;line-height:1.9"></div>
         </div>
         <div class="card">
-          <div class="form-group">
-            <label>Step 1 — Copy this prompt</label>
-            <textarea id="aiPromptDisplay" rows="4" readonly style="font-size:.8rem;font-family:monospace;background:var(--cream);color:var(--ink);resize:none"></textarea>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <h3 style="font-family:'Playfair Display',serif;font-size:1.15rem">🛒 Shopping list</h3>
+            <button class="btn btn-secondary btn-sm" onclick="sendToOcado()">🛍 Ocado</button>
           </div>
-          <div style="display:flex;gap:8px">
-            <button class="btn btn-primary" id="copyPromptBtn" style="flex:1">📋 Copy Prompt</button>
-            <a href="https://claude.ai" target="_blank" class="btn btn-secondary" style="flex:1;text-decoration:none">🤖 Open Claude AI</a>
-          </div>
-          <p style="font-size:.78rem;color:var(--il);margin-top:10px;line-height:1.5">💡 Any free AI works — Claude, ChatGPT, Gemini. Paste the prompt, then add your recipe below it.</p>
+          <p style="font-size:.82rem;color:var(--il);margin-bottom:14px">Uncheck anything you already have</p>
+          <div id="buyList"></div>
+          <div id="buyListSummary" class="buy-summary"></div>
         </div>
-        <div class="card" style="border:2px dashed var(--border);background:transparent;box-shadow:none">
-          <p style="font-size:.85rem;color:var(--il);text-align:center">Got your JSON from the AI?<br>Switch to the <strong>Paste JSON</strong> tab above ↑</p>
+        <div class="card">
+          <h3 style="font-weight:600;margin-bottom:8px;font-size:1rem">📋 Plain text</h3>
+          <textarea id="plainTextList" rows="8" style="font-size:.85rem;font-family:monospace" readonly></textarea>
+          <button class="btn btn-ghost" onclick="copyList()" style="margin-top:10px">📋 Copy list</button>
         </div>
-        <div class="card" style="opacity:.6">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-            <h4 style="font-size:.9rem;font-weight:600">⚡ Advanced: Direct AI parsing</h4>
-            <span style="font-size:.72rem;background:var(--tcp);color:var(--tc);padding:2px 8px;border-radius:20px;font-weight:500">Optional</span>
-          </div>
-          <p style="font-size:.82rem;color:var(--il);margin-bottom:12px;line-height:1.5">If you have an Anthropic API key, MealFlow can call AI directly without leaving the app. Set your key in Settings.</p>
-          <div class="form-group" style="margin-bottom:10px">
-            <textarea id="rawRecipeText" rows="3" placeholder="Paste your recipe here, then tap Parse…"></textarea>
-          </div>
-          <button class="btn btn-ghost" onclick="parseWithAI()" id="parseBtn" style="font-size:.85rem">✨ Parse with API key</button>
+        <button class="btn btn-danger btn-sm" onclick="clearShoppingList()" style="margin-top:4px;width:auto">🗑 Clear list</button>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="settings" class="section">
+      <div class="page-title">Settings</div>
+      <div class="page-sub" style="margin-bottom:20px">Your preferences</div>
+
+      <div class="share-banner">
+        <h4>🏠 Share your cookbook</h4>
+        <p>Invite your partner or household — they'll see and edit all the same recipes.</p>
+        <button class="btn btn-sm" id="shareCookbookBtn" style="background:white;color:var(--tc);font-weight:700">📋 Copy sharing link</button>
+        <div class="share-how">
+          <p>How to share:</p>
+          <ol>
+            <li>Tap Copy sharing link above and send it via WhatsApp or text</li>
+            <li>They open the link → Google Drive → tap <code>Add shortcut</code></li>
+            <li>They open MealFlow → Join someone's cookbook → paste link → done</li>
+          </ol>
         </div>
       </div>
 
-      <div id="addPane_json" style="display:none">
-        <p class="section-sub" style="margin-top:-10px">Paste Claude-generated JSON directly into your cookbook</p>
-        <div class="card" style="background:var(--ink);color:var(--cream);margin-bottom:14px">
-          <div style="font-size:.82rem;opacity:.7;line-height:1.7">
-            In a separate Claude chat, paste your recipe and send this prompt:<br>
-            <span id="jsonPromptText" style="font-family:monospace;background:rgba(255,255,255,.08);padding:8px 10px;border-radius:6px;display:block;margin-top:8px;font-size:.76rem;line-height:1.7;user-select:all">Convert this recipe to JSON. Return JSON only, no markdown.
+      <div class="card">
+        <div class="settings-row">
+          <div><div class="settings-label">Default portions</div><div class="settings-sub">How many portions per batch cook</div></div>
+          <select id="defaultPortions" style="width:auto;padding:8px 12px"><option value="4">4</option><option value="5" selected>5</option><option value="6">6</option><option value="8">8</option></select>
+        </div>
+        <div class="settings-row">
+          <div><div class="settings-label">Meals per week</div><div class="settings-sub">Used by the Random suggest</div></div>
+          <select id="recipesPerWeek" style="width:auto;padding:8px 12px"><option value="3">3</option><option value="4" selected>4</option></select>
+        </div>
+        <button class="btn btn-secondary" onclick="saveSettings()" style="margin-top:4px">Save Preferences</button>
+      </div>
 
-{"name":"","portions":4,"cookTime":"X min","tags":["protein","dish-type"],"notes":"","ingredients":[{"name":"","qty":"","unit":""}],"method":"Step 1.\nStep 2."}
+      <div class="card">
+        <h4 style="font-weight:700;margin-bottom:6px">☁️ Google Drive</h4>
+        <div id="driveStatus" style="font-size:.9rem;color:var(--sage);margin-bottom:14px"></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-secondary btn-sm" onclick="exportData()">⬇ Export Backup</button>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('importFile').click()">⬆ Import Backup</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h4 style="font-weight:700;margin-bottom:6px">⚡ Direct AI Parsing <span style="font-size:.72rem;background:var(--tcp);color:var(--tc);padding:2px 8px;border-radius:20px;font-weight:500;margin-left:4px;vertical-align:middle">Optional</span></h4>
+        <p style="font-size:.88rem;color:var(--il);margin-bottom:14px;line-height:1.5">Lets MealFlow call AI without leaving the app. Not needed — the free AI method works just as well.</p>
+        <div style="display:flex;gap:8px">
+          <input type="password" id="apiKeyInput" placeholder="sk-ant-…" autocomplete="off" style="flex:1">
+          <button onclick="saveApiKey()" style="background:var(--tc);color:white;border:none;border-radius:var(--rs);padding:0 18px;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;white-space:nowrap;font-size:.95rem">Save</button>
+        </div>
+        <div id="apiStatus" style="font-size:.82rem;margin-top:8px;color:var(--il)"></div>
+      </div>
+
+      <div class="card">
+        <p style="font-size:.82rem;color:var(--il)">MealFlow v9 · Built with Claude</p>
+      </div>
+    </section>
+
+    <!-- ADD RECIPE (hidden pane, shown via sheet) -->
+    <section id="add" class="section" style="display:none!important"></section>
+
+  </div><!-- /app-content -->
+
+  <!-- BOTTOM TAB BAR -->
+  <nav class="tab-bar">
+    <button class="tab-btn active" id="tab-cookbook" onclick="switchTab('cookbook',this)">
+      <span class="tab-icon">📖</span>
+      <span class="tab-label">Cookbook</span>
+    </button>
+    <button class="tab-btn" id="tab-planner" onclick="switchTab('planner',this);initPlanner()">
+      <span class="tab-icon">📅</span>
+      <span class="tab-label">This Week</span>
+    </button>
+    <button class="tab-btn" id="tab-shopping" onclick="switchTab('shopping',this)">
+      <span class="tab-icon">🛒</span>
+      <span class="tab-label">Shopping</span>
+    </button>
+    <button class="tab-btn" id="tab-settings" onclick="switchTab('settings',this)">
+      <span class="tab-icon">⚙️</span>
+      <span class="tab-label">Settings</span>
+    </button>
+  </nav>
+
+  <!-- FAB — opens add sheet -->
+  <button class="fab" id="fabBtn" aria-label="Add recipe">+</button>
+
+</div><!-- /appShell -->
+
+<!-- ADD SHEET -->
+<div class="sheet-overlay" id="sheetOverlay"></div>
+<div class="add-sheet" id="addSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-header">
+    <div class="sheet-title">Add Recipe</div>
+    <button class="sheet-close" id="sheetCloseBtn">✕</button>
+  </div>
+  <div class="sheet-body">
+    <div class="add-tab-bar">
+      <button class="add-tab active" id="addTab_ai" onclick="switchAddTab('ai')">🤖 AI</button>
+      <button class="add-tab" id="addTab_json" onclick="switchAddTab('json')">📋 Paste JSON</button>
+      <button class="add-tab" id="addTab_manual" onclick="switchAddTab('manual')">✏️ Manual</button>
+    </div>
+
+    <!-- AI TAB -->
+    <div id="addPane_ai">
+      <div class="card card-dark" style="margin-bottom:16px">
+        <div style="font-family:'Playfair Display',serif;font-size:1.05rem;margin-bottom:12px">3 easy steps</div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;gap:12px;align-items:flex-start"><div style="background:var(--tc);color:white;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;flex-shrink:0;margin-top:1px">1</div><span style="color:rgba(250,247,242,.8);font-size:.9rem;line-height:1.5">Copy the prompt below, then open Claude AI in a new tab</span></div>
+          <div style="display:flex;gap:12px;align-items:flex-start"><div style="background:var(--tc);color:white;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;flex-shrink:0;margin-top:1px">2</div><span style="color:rgba(250,247,242,.8);font-size:.9rem;line-height:1.5">Paste the prompt, add your recipe below it, hit send</span></div>
+          <div style="display:flex;gap:12px;align-items:flex-start"><div style="background:var(--tc);color:white;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;flex-shrink:0;margin-top:1px">3</div><span style="color:rgba(250,247,242,.8);font-size:.9rem;line-height:1.5">Copy the JSON it gives you, switch to Paste JSON tab</span></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Your prompt</label>
+        <textarea id="aiPromptDisplay" rows="4" readonly style="font-size:.78rem;font-family:monospace;background:var(--cream);resize:none"></textarea>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-primary" id="copyPromptBtn" style="flex:1">📋 Copy Prompt</button>
+        <a href="https://claude.ai" target="_blank" class="btn btn-secondary" style="flex:1;text-decoration:none">🤖 Open Claude</a>
+      </div>
+      <p style="font-size:.82rem;color:var(--il);margin-top:12px;line-height:1.5">💡 Claude, ChatGPT or Gemini all work fine.</p>
+
+      <div style="margin-top:20px;padding-top:18px;border-top:1px solid var(--border)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <span style="font-size:.9rem;font-weight:600;color:var(--il)">⚡ Direct parse (optional)</span>
+          <span style="font-size:.72rem;background:var(--tcp);color:var(--tc);padding:2px 8px;border-radius:20px;font-weight:500">Needs API key</span>
+        </div>
+        <textarea id="rawRecipeText" rows="3" placeholder="Paste recipe here…"></textarea>
+        <button class="btn btn-ghost" onclick="parseWithAI()" id="parseBtn" style="margin-top:10px;font-size:.88rem">✨ Parse with key</button>
+      </div>
+    </div>
+
+    <!-- JSON TAB -->
+    <div id="addPane_json" style="display:none">
+      <div class="card card-dark" style="margin-bottom:16px">
+        <div style="font-size:.82rem;opacity:.7;line-height:1.7">
+          Paste your recipe and this prompt into any AI chat:
+          <span id="jsonPromptText" style="font-family:monospace;background:rgba(255,255,255,.08);padding:10px 12px;border-radius:8px;display:block;margin-top:10px;font-size:.75rem;line-height:1.7;user-select:all">Convert this recipe to JSON. Return JSON only, no markdown.
+
+{"name":"","portions":4,"cookTime":"X min","tags":["protein","dish-type"],"notes":"","ingredients":[{"name":"","qty":0,"unit":""}],"method":"Step 1.\nStep 2."}
 
 Rules:
 - Weights in g only (never kg). Liquids in ml only (never l). Count items use "pcs". Stock/sachets use "pot" or "sachet"
@@ -406,179 +602,57 @@ Rules:
 - qty as a number e.g. 400 not "400"
 - tags: lowercase, first = protein, second = dish type
 - method: single string, steps separated by \n</span>
-            <button onclick="copyPrompt()" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:var(--cream);border-radius:6px;padding:6px 12px;font-size:.75rem;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:8px">📋 Copy prompt</button>
-          </div>
-        </div>
-        <div class="card">
-          <div class="form-group">
-            <label>Paste JSON here</label>
-            <textarea id="jsonPasteInput" rows="10" placeholder='{"name":"Chicken Tikka","portions":5,"cookTime":"45 min","tags":["chicken","curry"],"notes":"","ingredients":[{"name":"Chicken Thighs","qty":1000,"unit":"g"}],"method":"Step 1...\nStep 2..."}' style="font-family:monospace;font-size:.8rem"></textarea>
-          </div>
-          <div id="jsonPreview" style="display:none;margin-bottom:14px">
-            <div style="font-size:.78rem;font-weight:600;color:var(--sage);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">✓ Preview</div>
-            <div id="jsonPreviewContent" style="background:var(--sagep);border:1px solid var(--sage);border-radius:var(--rs);padding:12px;font-size:.85rem;line-height:1.7"></div>
-          </div>
-          <div style="display:flex;gap:8px">
-            <button class="btn btn-secondary" onclick="previewJSON()" style="flex:1">👁 Preview</button>
-            <button class="btn btn-primary" onclick="saveFromJSON()" style="flex:1">💾 Save Recipe</button>
-          </div>
-          <div id="jsonError" style="display:none;margin-top:10px;padding:10px;background:#FDE8E8;border-radius:8px;font-size:.82rem;color:#C0392B"></div>
+          <button onclick="copyPrompt()" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:var(--cream);border-radius:8px;padding:8px 14px;font-size:.8rem;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:10px;font-weight:500">📋 Copy prompt</button>
         </div>
       </div>
+      <div class="form-group">
+        <label>Paste JSON here</label>
+        <textarea id="jsonPasteInput" rows="8" placeholder='{"name":"Chicken Tikka","portions":5,...}' style="font-family:monospace;font-size:.82rem"></textarea>
+      </div>
+      <div id="jsonPreview" style="display:none;margin-bottom:16px">
+        <div style="font-size:.78rem;font-weight:700;color:var(--sage);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">✓ Preview — edit ingredients below</div>
+        <div id="jsonPreviewContent" style="background:var(--sagep);border:1px solid var(--sage);border-radius:var(--rs);padding:14px;font-size:.88rem;line-height:1.7"></div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-secondary" onclick="previewJSON()" style="flex:1">👁 Preview</button>
+        <button class="btn btn-primary" onclick="saveFromJSON()" style="flex:1">💾 Save</button>
+      </div>
+      <div id="jsonError" style="display:none;margin-top:12px;padding:12px;background:#FDE8E8;border-radius:10px;font-size:.88rem;color:#C0392B"></div>
+    </div>
 
-      <div id="addPane_manual" style="display:none">
-        <p class="section-sub" style="margin-top:-10px">Fill in the form directly</p>
-      </div>
+    <!-- MANUAL TAB -->
+    <div id="addPane_manual" style="display:none">
+      <p style="font-size:.9rem;color:var(--il);margin-bottom:18px">Fill in the details directly</p>
+    </div>
 
-      <div id="recipeForm" style="display:none">
-        <div class="card">
-          <div class="form-group"><label>Recipe Name</label><input type="text" id="recipeName" placeholder="e.g. Chicken Tikka Masala"></div>
-          <div class="grid-2">
-            <div class="form-group"><label>Portions</label><input type="number" id="recipePortions" value="5" min="1" max="20"></div>
-            <div class="form-group"><label>Cook Time</label><input type="text" id="recipeCookTime" placeholder="e.g. 45 min"></div>
-          </div>
-          <div class="form-group"><label>Tags (comma-separated)</label><input type="text" id="recipeTags" placeholder="e.g. chicken, pasta"></div>
-          <div class="form-group"><label>Notes / Source URL</label><input type="text" id="recipeNotes" placeholder="e.g. source URL or inspiration"></div>
-        </div>
-        <div class="card">
-          <label style="margin-bottom:12px;display:block">Ingredients</label>
-          <div style="display:grid;grid-template-columns:2fr 1fr 1.5fr 36px;gap:6px;margin-bottom:6px">
-            <span style="font-size:.72rem;color:var(--il);text-transform:uppercase">Item</span>
-            <span style="font-size:.72rem;color:var(--il);text-transform:uppercase">Qty</span>
-            <span style="font-size:.72rem;color:var(--il);text-transform:uppercase">Unit</span>
-            <span></span>
-          </div>
-          <div id="ingredientRows"></div>
-          <button class="btn btn-ghost" onclick="addIngredientRow()" style="margin-top:8px">+ Add Ingredient</button>
-        </div>
-        <div class="card">
-          <div class="form-group"><label>Method / Steps</label><textarea id="recipeMethod" rows="6" placeholder="Describe the cooking steps…"></textarea></div>
-        </div>
-        <button class="btn btn-primary" onclick="saveRecipe()" style="margin-bottom:80px">💾 Save to Cookbook</button>
+    <!-- RECIPE FORM (shared between manual + AI parse) -->
+    <div id="recipeForm" style="display:none">
+      <div class="form-group"><label>Recipe Name</label><input type="text" id="recipeName" placeholder="e.g. Chicken Tikka Masala"></div>
+      <div class="grid-2">
+        <div class="form-group"><label>Portions</label><input type="number" id="recipePortions" value="5" min="1" max="20"></div>
+        <div class="form-group"><label>Cook Time</label><input type="text" id="recipeCookTime" placeholder="e.g. 45 min"></div>
       </div>
-    </section>
+      <div class="form-group"><label>Tags (comma-separated)</label><input type="text" id="recipeTags" placeholder="e.g. chicken, pasta"></div>
+      <div class="form-group"><label>Notes / Source</label><input type="text" id="recipeNotes" placeholder="e.g. source URL or tips"></div>
+      <div style="margin-bottom:18px">
+        <label style="display:block;margin-bottom:10px">Ingredients</label>
+        <div style="display:grid;grid-template-columns:2fr 1fr 1.4fr 38px;gap:8px;margin-bottom:8px">
+          <span style="font-size:.72rem;color:var(--il);text-transform:uppercase;font-weight:600">Item</span>
+          <span style="font-size:.72rem;color:var(--il);text-transform:uppercase;font-weight:600">Qty</span>
+          <span style="font-size:.72rem;color:var(--il);text-transform:uppercase;font-weight:600">Unit</span>
+          <span></span>
+        </div>
+        <div id="ingredientRows"></div>
+        <button class="btn btn-ghost" onclick="addIngredientRow()" style="margin-top:6px;font-size:.9rem">+ Add ingredient</button>
+      </div>
+      <div class="form-group"><label>Method</label><textarea id="recipeMethod" rows="5" placeholder="Describe the cooking steps…"></textarea></div>
+      <button class="btn btn-primary" onclick="saveRecipe()" style="margin-bottom:20px">💾 Save to Cookbook</button>
+    </div>
 
-    <!-- PLANNER -->
-    <section id="planner" class="section">
-      <h1 class="section-title">Weekly Planner</h1>
-      <p class="section-sub">Pick your meals for the week</p>
-      <div class="card" style="background:var(--ink);color:var(--cream);margin-bottom:14px">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
-          <div>
-            <div style="font-family:'Playfair Display',serif;font-size:1.05rem;margin-bottom:2px">Week of <span id="weekLabel"></span></div>
-            <div style="font-size:.78rem;opacity:.5">Tick recipes below to add to this week</div>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <select id="recipeCountPicker" onchange="onRecipeCountChange()" style="background:rgba(255,255,255,.12);color:var(--cream);border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 10px;font-size:.82rem;font-family:'DM Sans',sans-serif">
-              <option value="1">1 meal</option><option value="2">2 meals</option><option value="3">3 meals</option><option value="4" selected>4 meals</option>
-              <option value="5">5 meals</option><option value="6">6 meals</option><option value="7">7 meals</option>
-            </select>
-            <button class="btn btn-sm" onclick="suggestPlan()" style="background:rgba(255,255,255,.12);color:var(--cream);border:1px solid rgba(255,255,255,.2);white-space:nowrap">🔀 Random</button>
-          </div>
-        </div>
-        <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.1);font-size:.82rem;display:flex;align-items:center;justify-content:flex-end">
-          <button onclick="clearPlanSelections()" style="background:none;border:none;color:rgba(250,247,242,.4);font-size:.75rem;cursor:pointer;font-family:'DM Sans',sans-serif">Clear all</button>
-        </div>
-      </div>
-      <div id="plannerActions" style="margin-bottom:12px">
-        <button class="btn btn-primary" onclick="approvePlan()">✅ Build Shopping List</button>
-      </div>
-      <div id="plannerPickerList"></div>
-    </section>
+  </div><!-- /sheet-body -->
+</div><!-- /add-sheet -->
 
-    <!-- SHOPPING -->
-    <section id="shopping" class="section">
-      <h1 class="section-title">Shopping List</h1>
-      <p class="section-sub">Ready to send to Ocado</p>
-      <div id="shoppingEmpty" class="empty-state">
-        <div class="icon">🛒</div><h3>No shopping list yet</h3>
-        <p>Approve a meal plan in the <strong>Planner</strong> tab to generate your list.</p>
-      </div>
-      <div id="shoppingContent" style="display:none">
-        <div class="card" style="background:var(--ink);color:var(--cream);margin-bottom:16px">
-          <div style="font-family:'Playfair Display',serif;font-size:1rem;margin-bottom:4px">This week's recipes</div>
-          <div id="shoppingRecipeList" style="font-size:.82rem;opacity:.6;line-height:1.8"></div>
-        </div>
-        <div class="card">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-            <h3 style="font-family:'Playfair Display',serif;font-size:1.1rem">🛒 Buy this week</h3>
-            <button class="btn btn-secondary btn-sm" onclick="sendToOcado()">🛍 Send to Ocado</button>
-          </div>
-          <div id="buyList"></div>
-        </div>
-        <div class="card">
-          <h3 style="font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:4px">🏠 Check cupboards</h3>
-          <p style="font-size:.82rem;color:var(--il);margin-bottom:14px">Likely in stock — tick any you need</p>
-          <div id="stapleList"></div>
-          <button class="btn btn-secondary" onclick="addStaplesToList()" style="margin-top:12px">+ Add ticked staples to order</button>
-        </div>
-        <div class="card">
-          <h3 style="font-weight:600;margin-bottom:8px;font-size:.95rem">📋 Plain text list</h3>
-          <p style="font-size:.82rem;color:var(--il);margin-bottom:10px">Copy and paste into any shopping app</p>
-          <textarea id="plainTextList" rows="10" style="font-size:.82rem;font-family:monospace" readonly></textarea>
-          <button class="btn btn-ghost" onclick="copyList()" style="margin-top:8px">📋 Copy to clipboard</button>
-        </div>
-        <button class="btn btn-danger btn-sm" onclick="clearShoppingList()" style="margin-bottom:80px;width:auto">🗑 Clear list</button>
-      </div>
-    </section>
-
-    <!-- SETTINGS -->
-    <section id="settings" class="section">
-      <h1 class="section-title">Settings</h1>
-      <p class="section-sub">Configure your MealFlow</p>
-      <!-- Share cookbook banner -->
-      <div class="share-banner">
-        <h4>🏠 Share your cookbook</h4>
-        <p>Invite your partner or household — they'll see and edit all the same recipes.</p>
-        <button class="btn btn-sm" id="shareCookbookBtn">📋 Copy sharing link</button>
-        <div class="share-how">
-          <p>How to share — 3 steps:</p>
-          <ol>
-            <li>Tap <strong>Copy sharing link</strong> above and send it to your partner via WhatsApp or text</li>
-            <li>They open the link → Google Drive asks them to sign in → tap <code>Add shortcut to Drive</code></li>
-            <li>They open MealFlow → tap <strong>Join someone's cookbook</strong> → paste the link → done</li>
-          </ol>
-        </div>
-      </div>
-
-      <div class="card">
-        <h4 style="font-weight:600;margin-bottom:6px">⚡ Direct AI Parsing <span style="font-size:.72rem;background:var(--tcp);color:var(--tc);padding:2px 8px;border-radius:20px;font-weight:500;margin-left:4px">Optional</span></h4>
-        <p style="font-size:.82rem;color:var(--il);margin-bottom:14px;line-height:1.5">Adds an API key so MealFlow can call AI directly without leaving the app. Not needed — the free AI method in the Add tab works just as well.</p>
-        <div style="display:flex;gap:8px">
-          <input type="password" id="apiKeyInput" placeholder="sk-ant-…" autocomplete="off" style="flex:1">
-          <button onclick="saveApiKey()" style="background:var(--tc);color:white;border:none;border-radius:var(--rs);padding:0 16px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;white-space:nowrap">Save</button>
-        </div>
-        <div id="apiStatus" style="font-size:.78rem;margin-top:8px;color:var(--il)"></div>
-      </div>
-      <div class="card">
-        <div class="form-group">
-          <label>Default batch portions</label>
-          <select id="defaultPortions"><option value="4">4</option><option value="5" selected>5</option><option value="6">6</option><option value="8">8</option></select>
-        </div>
-        <div class="form-group">
-          <label>Recipes per week</label>
-          <select id="recipesPerWeek"><option value="3">3</option><option value="4" selected>4</option></select>
-        </div>
-        <button class="btn btn-secondary" onclick="saveSettings()">Save Preferences</button>
-      </div>
-      <div class="card">
-        <h4 style="font-weight:600;margin-bottom:6px">☁️ Google Drive Sync</h4>
-        <div id="driveStatus" style="font-size:.85rem;color:var(--sage);margin-bottom:12px"></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-secondary btn-sm" onclick="exportData()">⬇ Export Backup</button>
-          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('importFile').click()">⬆ Import Backup</button>
-        </div>
-      </div>
-      <div class="card">
-        <h4 style="font-weight:600;margin-bottom:6px">About</h4>
-        <p class="text-muted">MealFlow v8 · Built with Claude</p>
-      </div>
-    </section>
-  </main>
-
-  <button class="fab" onclick="showSection('add',document.querySelectorAll('.nav-tab')[1]);switchAddTab('ai');window.scrollTo(0,0)">+</button>
-</div>
-
+<!-- RECIPE MODAL -->
 <div class="modal-overlay" id="recipeModal">
   <div class="modal">
     <div class="modal-header">
@@ -608,24 +682,55 @@ let joiningHousehold=false;
 
 window.onload=async()=>{
   setLoading('Starting up…');
-  // Wire up welcome screen buttons
   document.getElementById('signInNewBtn').addEventListener('click',()=>{joiningHousehold=false;signIn();});
   document.getElementById('signInJoinBtn').addEventListener('click',()=>{joiningHousehold=true;signIn();});
   document.getElementById('joinCancelBtn').addEventListener('click',()=>closeJoinModal());
   document.getElementById('joinConfirmBtn').addEventListener('click',()=>confirmJoin());
   document.getElementById('shareCookbookBtn').addEventListener('click',()=>shareCookbook());
   document.getElementById('copyPromptBtn').addEventListener('click',()=>copyPrompt());
-  // Set AI prompt text
+  document.getElementById('fabBtn').addEventListener('click',()=>openAddSheet());
+  document.getElementById('sheetOverlay').addEventListener('click',()=>closeAddSheet());
+  document.getElementById('sheetCloseBtn').addEventListener('click',()=>closeAddSheet());
   document.getElementById('aiPromptDisplay').value=document.getElementById('jsonPromptText').textContent.trim();
   if(localStorage.getItem('mealflow_scope_v')!=='2'){['mealflow_gtoken','mealflow_shared_folder'].forEach(k=>localStorage.removeItem(k));localStorage.setItem('mealflow_scope_v','2');}
   const stored=localStorage.getItem('mealflow_gtoken');
   if(stored){const p=JSON.parse(stored);if(p.expiry>Date.now()){accessToken=p.token;currentUser=JSON.parse(localStorage.getItem('mealflow_user')||'null');await initApp();return;}}
   hideLoading();showWelcome();
 };
+
 const setLoading=msg=>{document.getElementById('loadingMsg').textContent=msg;document.getElementById('loadingOverlay').style.display='flex'};
 const hideLoading=()=>document.getElementById('loadingOverlay').style.display='none';
-const showWelcome=()=>{document.getElementById('welcomeScreen').style.display='flex';};
-const hideWelcome=()=>{document.getElementById('welcomeScreen').style.display='none';};
+const showWelcome=()=>{document.getElementById('welcomeScreen').style.display='flex'};
+const hideWelcome=()=>{document.getElementById('welcomeScreen').style.display='none'};
+
+// ── ADD SHEET ──
+function openAddSheet(){
+  document.getElementById('sheetOverlay').classList.add('open');
+  document.getElementById('addSheet').classList.add('open');
+  switchAddTab('ai');
+}
+function closeAddSheet(){
+  document.getElementById('sheetOverlay').classList.remove('open');
+  document.getElementById('addSheet').classList.remove('open');
+}
+
+// ── TAB SWITCHING ──
+function switchTab(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(id==='cookbook')renderCookbook();
+  document.querySelector('.app-content').scrollTop=0;
+}
+// Keep legacy showSection working (used by edit recipe redirect etc)
+function showSection(id,_tab){
+  if(id==='add'){openAddSheet();return;}
+  const btn=document.getElementById('tab-'+id);
+  switchTab(id,btn);
+  if(id==='planner')initPlanner();
+  if(id==='shopping'){}
+}
 
 // ── AUTH ──
 function signIn(){
@@ -642,7 +747,7 @@ function signOut(){
   google.accounts.oauth2.revoke(accessToken,()=>{});
   ['mealflow_gtoken','mealflow_user','mealflow_shared_folder'].forEach(k=>localStorage.removeItem(k));
   accessToken=null;currentUser=null;recipes=[];driveFileId=null;driveFolderId=null;
-  document.getElementById('appShell').style.display='none';showWelcome();closeUserMenu();toast('Signed out');
+  document.getElementById('appShell').classList.remove('visible');showWelcome();closeUserMenu();toast('Signed out');
 }
 
 // ── JOIN HOUSEHOLD ──
@@ -650,17 +755,12 @@ function showJoinModal(){hideWelcome();document.getElementById('joinModal').clas
 function closeJoinModal(){document.getElementById('joinModal').classList.remove('open');showWelcome();}
 async function confirmJoin(){
   const url=document.getElementById('joinFolderUrl').value.trim();
-  const errEl=document.getElementById('joinError');
-  errEl.style.display='none';
-  // Extract folder ID from Drive URL
+  const errEl=document.getElementById('joinError');errEl.style.display='none';
   const match=url.match(/folders\/([a-zA-Z0-9_-]+)/);
-  if(!match){errEl.textContent='That doesn\'t look like a Google Drive folder link. It should contain "folders/" in the URL.';errEl.style.display='block';return;}
-  const sharedFolderId=match[1];
-  // Store shared folder preference and proceed
-  localStorage.setItem('mealflow_shared_folder',sharedFolderId);
+  if(!match){errEl.textContent='That doesn\'t look like a Google Drive folder link.';errEl.style.display='block';return;}
+  localStorage.setItem('mealflow_shared_folder',match[1]);
   document.getElementById('joinModal').classList.remove('open');
-  setLoading('Connecting to shared cookbook…');
-  await initApp(sharedFolderId);
+  setLoading('Connecting to shared cookbook…');await initApp(match[1]);
 }
 
 // ── APP INIT ──
@@ -668,19 +768,24 @@ async function initApp(overrideFolderId){
   setLoading('Finding your cookbook…');
   try{
     await findOrCreateDriveFile(overrideFolderId);setLoading('Loading recipes…');await loadFromDrive();
-    hideLoading();document.getElementById('appShell').style.display='block';
+    hideLoading();
+    document.getElementById('appShell').classList.add('visible');
     renderHeader();renderCookbook();loadSettings();loadSavedShoppingList();setSyncStatus('synced');updateDriveStatus();
   }catch(e){
     hideLoading();console.error(e);toast('❌ Could not connect to Drive');
     recipes=JSON.parse(localStorage.getItem('mealflow_recipes_local')||'[]');
-    document.getElementById('appShell').style.display='block';
+    document.getElementById('appShell').classList.add('visible');
     renderHeader();renderCookbook();setSyncStatus('error');
   }
 }
 function renderHeader(){
   const c=document.getElementById('userAvatarContainer'),n=document.getElementById('userMenuName');
-  if(currentUser){n.textContent=currentUser.name||currentUser.email||'You';c.innerHTML=currentUser.picture?`<img src="${currentUser.picture}" class="user-avatar">`:`<div class="user-initials">${(currentUser.name||'U').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()}</div>`;}
-  else c.innerHTML='<div class="user-initials">👤</div>';
+  if(currentUser){
+    n.textContent=currentUser.name||currentUser.email||'You';
+    c.innerHTML=currentUser.picture
+      ?`<img src="${currentUser.picture}" class="user-avatar" onclick="toggleUserMenu()">`
+      :`<div class="user-initials" onclick="toggleUserMenu()">${(currentUser.name||'U').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()}</div>`;
+  }else c.innerHTML='<div class="user-initials" onclick="toggleUserMenu()">👤</div>';
 }
 
 // ── DRIVE ──
@@ -692,30 +797,21 @@ async function driveRequest(url,opts={}){
 async function findOrCreateDriveFile(overrideFolderId){
   const savedShared=localStorage.getItem('mealflow_shared_folder');
   const isSharedFolder=!!(overrideFolderId||savedShared);
-  // Shared Drive params needed to see files in folders shared by others
-  const sharedParams='&includeItemsFromAllDrives=true&supportsAllDrives=true&corpora=allDrives';
-
   if(isSharedFolder){
     driveFolderId=overrideFolderId||savedShared;
-  } else {
-    // Find or create own MealFlow folder in user's own Drive
+  }else{
     const fs=await(await driveRequest(`https://www.googleapis.com/drive/v3/files?q=name='${FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false&fields=files(id)&spaces=drive`)).json();
     if(fs.files?.length){driveFolderId=fs.files[0].id;}
     else{const f=await(await driveRequest('https://www.googleapis.com/drive/v3/files',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:FOLDER_NAME,mimeType:'application/vnd.google-apps.folder'})})).json();driveFolderId=f.id;}
   }
   if(!driveFolderId)throw new Error('No folder');
-
-  // Search for existing recipes file — use allDrives params if shared so we can see it
-  const searchQ = encodeURIComponent(`name='${FILENAME}' and '${driveFolderId}' in parents and trashed=false`);
-const searchUrl = isSharedFolder
-  ? `https://www.googleapis.com/drive/v3/files?q=${searchQ}&fields=files(id)&includeItemsFromAllDrives=true&supportsAllDrives=true&corpora=user`
-  : `https://www.googleapis.com/drive/v3/files?q=${searchQ}&fields=files(id)&spaces=drive`;
+  const searchQ=encodeURIComponent(`name='${FILENAME}' and '${driveFolderId}' in parents and trashed=false`);
+  const searchUrl=isSharedFolder
+    ?`https://www.googleapis.com/drive/v3/files?q=${searchQ}&fields=files(id)&includeItemsFromAllDrives=true&supportsAllDrives=true&corpora=user`
+    :`https://www.googleapis.com/drive/v3/files?q=${searchQ}&fields=files(id)&spaces=drive`;
   const fls=await(await driveRequest(searchUrl)).json();
-
-  if(fls.files?.length){
-    driveFileId=fls.files[0].id;
-  } else {
-    // Create new recipes file — supportsAllDrives needed to create in a shared folder
+  if(fls.files?.length){driveFileId=fls.files[0].id;}
+  else{
     const b='-------mf_boundary';
     const meta={name:FILENAME,mimeType:'application/json',parents:[driveFolderId]};
     const body=[`--${b}`,'Content-Type: application/json; charset=UTF-8','',JSON.stringify(meta),`--${b}`,'Content-Type: application/json','','[]',`--${b}--`].join('\r\n');
@@ -735,7 +831,8 @@ async function loadFromDrive(){
 async function uploadToDrive(data){
   if(!driveFileId||!accessToken)return;setSyncStatus('syncing');
   try{
-    const isShared=!!localStorage.getItem('mealflow_shared_folder');await driveRequest(`https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=media${isShared?'&supportsAllDrives=true':''}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    const isShared=!!localStorage.getItem('mealflow_shared_folder');
+    await driveRequest(`https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=media${isShared?'&supportsAllDrives=true':''}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
     localStorage.setItem('mealflow_recipes_local',JSON.stringify(data));setSyncStatus('synced');
   }catch(e){setSyncStatus('error');toast('⚠️ Sync failed — saved locally');}
 }
@@ -753,19 +850,15 @@ function updateDriveStatus(){
   const el=document.getElementById('driveStatus');
   const isShared=!!localStorage.getItem('mealflow_shared_folder');
   if(driveFolderId){
-    el.innerHTML=`<span style="color:var(--sage)">✓ ${isShared?'Connected to shared cookbook':'Your cookbook is synced'}</span> · <a href="https://drive.google.com/drive/folders/${driveFolderId}" target="_blank" style="color:var(--tc);font-size:.82rem">Open in Drive ↗</a>`;
-    el.style.color='inherit';
+    el.innerHTML=`<span style="color:var(--sage)">✓ ${isShared?'Connected to shared cookbook':'Your cookbook is synced'}</span> · <a href="https://drive.google.com/drive/folders/${driveFolderId}" target="_blank" style="color:var(--tc);font-size:.88rem">Open in Drive ↗</a>`;
   }else{el.textContent='⚠ Not connected';el.style.color='#E74C3C';}
 }
 function shareCookbook(){
   if(!driveFolderId){toast('Connect to Drive first');return;}
-  const link=`https://drive.google.com/drive/folders/${driveFolderId}`;
-  navigator.clipboard.writeText(link).then(()=>{
+  navigator.clipboard.writeText(`https://drive.google.com/drive/folders/${driveFolderId}`).then(()=>{
     toast('📋 Sharing link copied!');
-    // Show instructions
     const btn=document.getElementById('shareCookbookBtn');
-    btn.textContent='✓ Copied!';
-    setTimeout(()=>btn.textContent='📋 Copy sharing link',3000);
+    btn.textContent='✓ Copied!';setTimeout(()=>btn.textContent='📋 Copy sharing link',3000);
   });
 }
 
@@ -773,15 +866,6 @@ function shareCookbook(){
 const toggleUserMenu=()=>document.getElementById('userMenu').classList.toggle('open');
 const closeUserMenu=()=>document.getElementById('userMenu').classList.remove('open');
 document.addEventListener('click',e=>{if(!e.target.closest('#userAvatarContainer')&&!e.target.closest('#userMenu'))closeUserMenu();});
-
-// ── NAV ──
-function showSection(id,tab){
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  if(tab)tab.classList.add('active');
-  if(id==='cookbook')renderCookbook();
-}
 
 // ── TOAST ──
 function toast(msg,d=2500){const e=document.getElementById('toast');e.textContent=msg;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),d);}
@@ -793,17 +877,19 @@ function renderCookbook(){
   f.sort((a,b)=>a.name.localeCompare(b.name));
   document.getElementById('recipeCount').textContent=recipes.length;
   const el=document.getElementById('recipeList');
-  if(!recipes.length){el.innerHTML='<div class="empty-state"><div class="icon">📖</div><h3>Your cookbook is empty</h3><p>Add your first recipe using the <strong>Add</strong> tab.</p></div>';return;}
+  if(!recipes.length){el.innerHTML='<div class="empty-state"><div class="icon">📖</div><h3>Your cookbook is empty</h3><p>Tap <strong>+</strong> to add your first recipe.</p></div>';return;}
   if(!f.length){el.innerHTML='<div class="empty-state"><div class="icon">🔍</div><h3>No matches</h3><p>Try a different search term.</p></div>';return;}
-  el.innerHTML=f.map(r=>`<div class="recipe-card" data-recipe-id="${r.id}"><div class="recipe-card-body"><div class="recipe-name">${r.name}</div><div class="recipe-meta" style="margin:5px 0 8px">${r.cookTime?`⏱ ${r.cookTime}`:''}${r.portions?`· 🍽 ${r.portions} portions`:''}</div><div>${(r.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('')}</div></div></div>`).join('');
+  el.innerHTML=f.map(r=>`<div class="recipe-card" data-recipe-id="${r.id}"><div class="recipe-card-accent"></div><div class="recipe-card-body"><div class="recipe-name">${r.name}</div><div class="recipe-meta">${r.cookTime?`⏱ ${r.cookTime}`:''}${r.portions?`· 🍽 ${r.portions} portions`:''}</div><div>${(r.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('')}</div></div></div>`).join('');
   el.querySelectorAll('.recipe-card[data-recipe-id]').forEach(card=>{card.addEventListener('click',()=>openRecipe(card.dataset.recipeId));});
 }
 
 // ── RECIPE MODAL ──
 function openRecipe(id){
   const r=recipes.find(x=>x.id===id);if(!r)return;
-  currentPortions=r.portions||5;document.getElementById('modalTitle').textContent=r.name;
-  renderModalBody(r);document.getElementById('recipeModal').classList.add('open');
+  currentPortions=r.portions||5;
+  document.getElementById('modalTitle').textContent=r.name;
+  renderModalBody(r);
+  document.getElementById('recipeModal').classList.add('open');
 }
 function renderModalBody(r){
   const scale=currentPortions/(r.portions||5);
@@ -812,13 +898,13 @@ function renderModalBody(r){
   const steps=methodSteps.length?methodSteps.map(s=>`<li>${s}</li>`).join(''):'<li>No steps recorded.</li>';
   const body=document.getElementById('modalBody');
   body.innerHTML=`
-    <div class="portion-scaler"><label style="margin:0">🍽 Portions</label><div class="scaler-controls"><button class="scaler-btn" id="portionDown">−</button><span class="scaler-count" id="portionCount">${currentPortions}</span><button class="scaler-btn" id="portionUp">+</button></div></div>
-    ${r.tags?.length?`<div style="margin-bottom:14px">${r.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>`:''}
-    ${r.notes?`<p class="text-muted" style="margin-bottom:14px">📎 ${r.notes}</p>`:''}
+    <div class="portion-scaler"><label>🍽 Portions</label><div class="scaler-controls"><button class="scaler-btn" id="portionDown">−</button><span class="scaler-count" id="portionCount">${currentPortions}</span><button class="scaler-btn" id="portionUp">+</button></div></div>
+    ${r.tags?.length?`<div style="margin-bottom:16px">${r.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>`:''}
+    ${r.notes?`<p class="text-muted" style="margin-bottom:16px">📎 ${r.notes}</p>`:''}
     <div class="recipe-detail-section"><h4>Ingredients</h4><ul class="ingredient-list">${ings||'<li>None recorded</li>'}</ul></div>
     <div class="recipe-detail-section"><h4>Method</h4><ol class="steps-list">${steps}</ol></div>
     <hr class="divider">
-    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-secondary btn-sm" id="modalEditBtn">✏️ Edit</button><button class="btn btn-danger btn-sm" id="modalDeleteBtn">🗑 Delete</button></div>`;
+    <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-secondary btn-sm" id="modalEditBtn">✏️ Edit</button><button class="btn btn-danger btn-sm" id="modalDeleteBtn">🗑 Delete</button></div>`;
   body.querySelector('#portionDown').addEventListener('click',()=>adjustPortions(r.id,-1));
   body.querySelector('#portionUp').addEventListener('click',()=>adjustPortions(r.id,1));
   body.querySelector('#modalEditBtn').addEventListener('click',()=>editRecipe(r.id));
@@ -833,7 +919,7 @@ function addIngredientRow(name='',qty='',unit=''){
   const row=document.createElement('div');row.className='ingredient-row';
   const opts=["g","ml","pcs","pot","sachet"];
   const selHtml=opts.map(o=>`<option value="${o}"${o===unit||(!unit&&o==="g")?" selected":""}>${o}</option>`).join("");
-  row.innerHTML=`<input type="text" placeholder="e.g. Chicken Thighs" value="${name}"><input type="text" placeholder="400" value="${qty}"><select style="padding:10px 8px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:.9rem;background:var(--ww);color:var(--ink)">${selHtml}</select><button class="remove-btn" onclick="this.parentElement.remove()">×</button>`;
+  row.innerHTML=`<input type="text" placeholder="e.g. Chicken Thighs" value="${name}"><input type="text" placeholder="400" value="${qty}"><select style="padding:11px 8px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:.9rem;background:var(--ww);color:var(--ink)">${selHtml}</select><button class="remove-btn" onclick="this.parentElement.remove()">×</button>`;
   document.getElementById('ingredientRows').appendChild(row);
 }
 const getIngredients=()=>Array.from(document.querySelectorAll('#ingredientRows .ingredient-row')).map(row=>{const inputs=row.querySelectorAll('input');const sel=row.querySelector('select');return{name:inputs[0].value.trim(),qty:inputs[1].value.trim(),unit:sel?sel.value:'g'};}).filter(i=>i.name);
@@ -852,7 +938,7 @@ function showManualForm(){
 function copyPrompt(){
   const text=document.getElementById('jsonPromptText').textContent.trim();
   navigator.clipboard.writeText(text).then(()=>{
-    toast('📋 Prompt copied — now open Claude AI and paste it!',3500);
+    toast('📋 Prompt copied — open Claude AI and paste it!',3500);
     const btn=document.getElementById('copyPromptBtn');
     if(btn){btn.textContent='✓ Copied!';setTimeout(()=>btn.textContent='📋 Copy Prompt',3000);}
   });
@@ -874,55 +960,37 @@ function previewJSON(){
         <button class="remove-btn" data-remove="${idx}">×</button>
       </div>`).join('');
     document.getElementById('jsonPreviewContent').innerHTML=`
-      <div style="margin-bottom:10px"><strong>${r.name}</strong> · 🍽 ${r.portions||'?'} portions · ⏱ ${r.cookTime||'?'}</div>
+      <div style="margin-bottom:10px"><strong>${r.name}</strong> · 🍽 ${r.portions||'?'} · ⏱ ${r.cookTime||'?'}</div>
       ${r.tags?.length?`<div style="margin-bottom:10px">🏷 ${r.tags.join(', ')}</div>`:''}
-      <div style="font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--il);margin-bottom:8px">Ingredients — edit before saving</div>
+      <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--il);margin-bottom:8px">Edit ingredients if needed</div>
       <div style="display:grid;grid-template-columns:2fr 1fr 1.5fr 36px;gap:6px;margin-bottom:6px">
-        <span style="font-size:.72rem;color:var(--il);text-transform:uppercase">Item</span>
-        <span style="font-size:.72rem;color:var(--il);text-transform:uppercase">Qty</span>
-        <span style="font-size:.72rem;color:var(--il);text-transform:uppercase">Unit</span><span></span>
+        <span style="font-size:.7rem;color:var(--il);text-transform:uppercase;font-weight:600">Item</span>
+        <span style="font-size:.7rem;color:var(--il);text-transform:uppercase;font-weight:600">Qty</span>
+        <span style="font-size:.7rem;color:var(--il);text-transform:uppercase;font-weight:600">Unit</span><span></span>
       </div>
       <div id="previewIngRows">${ingRows}</div>
-      <button id="previewAddIngBtn" style="background:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:.8rem;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--il);margin-top:4px">+ Add ingredient</button>
-      ${r.method?`<div style="margin-top:12px;font-size:.82rem;color:var(--il)"><strong>Method:</strong> ${r.method.slice(0,200)}${r.method.length>200?'…':''}</div>`:''}`;
+      <button id="previewAddIngBtn" style="background:none;border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:.82rem;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--il);margin-top:6px">+ Add ingredient</button>
+      ${r.method?`<div style="margin-top:14px;font-size:.85rem;color:var(--il)"><strong>Method:</strong> ${r.method.slice(0,200)}${r.method.length>200?'…':''}</div>`:''}`;
     document.getElementById('jsonPreview').style.display='block';
-    // Wire up live editing
-    document.getElementById('previewIngRows').addEventListener('input',e=>{
-      const el=e.target;const idx=parseInt(el.dataset.idx);const field=el.dataset.field;
-      if(idx>=0&&field)window._previewedRecipe.ingredients[idx][field]=el.value;
-    });
-    document.getElementById('previewIngRows').addEventListener('change',e=>{
-      const el=e.target;const idx=parseInt(el.dataset.idx);const field=el.dataset.field;
-      if(idx>=0&&field)window._previewedRecipe.ingredients[idx][field]=el.value;
-    });
-    document.getElementById('previewIngRows').addEventListener('click',e=>{
-      if(e.target.dataset.remove!==undefined){
-        const idx=parseInt(e.target.dataset.remove);
-        window._previewedRecipe.ingredients.splice(idx,1);
-        previewJSON();
-      }
-    });
-    document.getElementById('previewAddIngBtn').addEventListener('click',()=>{
-      window._previewedRecipe.ingredients.push({name:'',qty:0,unit:'g'});
-      previewJSON();
-    });
+    document.getElementById('previewIngRows').addEventListener('input',e=>{const el=e.target;const idx=parseInt(el.dataset.idx);const field=el.dataset.field;if(idx>=0&&field)window._previewedRecipe.ingredients[idx][field]=el.value;});
+    document.getElementById('previewIngRows').addEventListener('change',e=>{const el=e.target;const idx=parseInt(el.dataset.idx);const field=el.dataset.field;if(idx>=0&&field)window._previewedRecipe.ingredients[idx][field]=el.value;});
+    document.getElementById('previewIngRows').addEventListener('click',e=>{if(e.target.dataset.remove!==undefined){window._previewedRecipe.ingredients.splice(parseInt(e.target.dataset.remove),1);previewJSON();}});
+    document.getElementById('previewAddIngBtn').addEventListener('click',()=>{window._previewedRecipe.ingredients.push({name:'',qty:0,unit:'g'});previewJSON();});
   }catch(e){showJSONError('Invalid JSON: '+e.message);}
 }
-const parseJSONInput=raw=>{const cleaned=raw.replace(/^```json?\s*/i,'').replace(/```\s*$/,'').trim().replace(/[\u2018\u2019]/g,"'").replace(/[\u201C\u201D\u201E\u201F\u2033\u2036]/g,'"');const p=JSON.parse(cleaned);if(!p.name)throw new Error('"name" required');if(!p.ingredients)throw new Error('"ingredients" required');return p;};
+const parseJSONInput=raw=>{
+  const cleaned=raw.replace(/^```json?\s*/i,'').replace(/```\s*$/,'').trim().replace(/[\u2018\u2019]/g,"'").replace(/[\u201C\u201D\u201E\u201F\u2033\u2036]/g,'"');
+  const p=JSON.parse(cleaned);if(!p.name)throw new Error('"name" required');if(!p.ingredients)throw new Error('"ingredients" required');return p;
+};
 async function saveFromJSON(){
   document.getElementById('jsonError').style.display='none';
-  // Use edited preview recipe if available, otherwise parse fresh from textarea
   let r=window._previewedRecipe;
-  if(!r){
-    const raw=document.getElementById('jsonPasteInput').value.trim();
-    if(!raw){showJSONError('Please paste some JSON first');return;}
-    try{r=parseJSONInput(raw);}catch(e){showJSONError('Could not save: '+e.message);return;}
-  }
+  if(!r){const raw=document.getElementById('jsonPasteInput').value.trim();if(!raw){showJSONError('Please paste some JSON first');return;}try{r=parseJSONInput(raw);}catch(e){showJSONError('Could not save: '+e.message);return;}}
   try{
     recipes.push({id:Date.now().toString(),name:r.name,portions:parseInt(r.portions)||5,cookTime:r.cookTime||'',tags:Array.isArray(r.tags)?r.tags:[],notes:r.notes||'',ingredients:(r.ingredients||[]).map(i=>normaliseIngredient({name:String(i.name||'').trim(),qty:i.qty,unit:String(i.unit||'g').trim()})).filter(i=>i.name),method:r.method||'',createdAt:Date.now(),updatedAt:Date.now()});
     scheduleSave();document.getElementById('jsonPasteInput').value='';document.getElementById('jsonPreview').style.display='none';
-    window._previewedRecipe=null;
-    toast(`✅ "${r.name}" saved!`);showSection('cookbook',document.querySelectorAll('.nav-tab')[0]);
+    window._previewedRecipe=null;closeAddSheet();renderCookbook();
+    toast(`✅ "${r.name}" saved!`);
   }catch(e){showJSONError('Could not save: '+e.message);}
 }
 function showJSONError(msg){const e=document.getElementById('jsonError');e.textContent='⚠ '+msg;e.style.display='block';}
@@ -931,29 +999,29 @@ function showJSONError(msg){const e=document.getElementById('jsonError');e.textC
 const toggleRecording=()=>isRecording?stopRecording():startRecording();
 function startRecording(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){toast('Speech recognition not supported — try Chrome or Safari');return;}
+  if(!SR){toast('Speech not supported — try Chrome');return;}
   recognition=new SR();recognition.continuous=true;recognition.interimResults=true;recognition.lang='en-GB';
   let final='';
-  recognition.onresult=e=>{let interim='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)final+=e.results[i][0].transcript+' ';else interim+=e.results[i][0].transcript;}const b=document.getElementById('transcriptBox');b.classList.remove('placeholder');b.textContent=final+interim;document.getElementById('rawRecipeText').value=final+interim;};
+  recognition.onresult=e=>{let interim='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)final+=e.results[i][0].transcript+' ';else interim+=e.results[i][0].transcript;}const b=document.getElementById('transcriptBox');if(b){b.classList.remove('placeholder');b.textContent=final+interim;}document.getElementById('rawRecipeText').value=final+interim;};
   recognition.onerror=()=>stopRecording();recognition.onend=()=>{if(isRecording)recognition.start();};
-  recognition.start();isRecording=true;document.getElementById('recordBtn').classList.add('recording');document.getElementById('recordBtn').textContent='⏹ Stop Recording';
+  recognition.start();isRecording=true;const btn=document.getElementById('recordBtn');if(btn){btn.classList.add('recording');btn.textContent='⏹ Stop';}
 }
-function stopRecording(){if(recognition){recognition.stop();recognition=null;}isRecording=false;document.getElementById('recordBtn').classList.remove('recording');document.getElementById('recordBtn').textContent='🎙 Start Recording';}
-function clearTranscript(){document.getElementById('transcriptBox').textContent='Your words will appear here as you speak…';document.getElementById('transcriptBox').classList.add('placeholder');document.getElementById('rawRecipeText').value='';}
+function stopRecording(){if(recognition){recognition.stop();recognition=null;}isRecording=false;const btn=document.getElementById('recordBtn');if(btn){btn.classList.remove('recording');btn.textContent='🎙 Record';}}
 
 // ── AI PARSE ──
 async function parseWithAI(){
   const text=document.getElementById('rawRecipeText').value.trim();
-  if(!text){toast('Please dictate or type your recipe first');return;}
+  if(!text){toast('Paste your recipe first');return;}
   const apiKey=localStorage.getItem('mealflow_api_key');
-  if(!apiKey){toast('⚙️ Add your Anthropic API key in Settings first');showSection('settings',document.querySelectorAll('.nav-tab')[4]);return;}
+  if(!apiKey){toast('⚙️ Add your API key in Settings first');return;}
   const btn=document.getElementById('parseBtn');btn.innerHTML='<span class="spinner"></span> Parsing…';btn.disabled=true;
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:`Parse this recipe to JSON only, no markdown. Schema: {name,portions(4-6),cookTime,tags[],ingredients[{name,qty,unit}],method(newline steps),notes}. All quantities in g or kg only (1 tbsp≈15g, 1 tsp≈5g). Recipe: """${text}"""`}]})});
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:`Parse this recipe to JSON only, no markdown. Schema: {name,portions(4-6),cookTime,tags[],ingredients[{name,qty,unit}],method(newline steps),notes}. All quantities in g or ml only (1 tbsp≈15g, 1 tsp≈5g). Recipe: """${text}"""`}]})});
     const data=await res.json();if(data.error)throw new Error(data.error.message);
-    populateForm(JSON.parse(data.content[0].text.trim().replace(/```json|```/g,'')));toast('✅ Recipe parsed! Review and save.');
-  }catch(e){toast('❌ Parse failed — check API key or try again');console.error(e);}
-  finally{btn.innerHTML='✨ Parse with AI';btn.disabled=false;}
+    populateForm(JSON.parse(data.content[0].text.trim().replace(/```json|```/g,'')));
+    toast('✅ Parsed! Review and save.');switchAddTab('manual');
+  }catch(e){toast('❌ Parse failed — check API key');console.error(e);}
+  finally{btn.innerHTML='✨ Parse with key';btn.disabled=false;}
 }
 function populateForm(r){
   document.getElementById('recipeName').value=r.name||'';document.getElementById('recipePortions').value=r.portions||5;document.getElementById('recipeCookTime').value=r.cookTime||'';document.getElementById('recipeTags').value=(r.tags||[]).join(', ');document.getElementById('recipeMethod').value=r.method||'';document.getElementById('recipeNotes').value=r.notes||'';document.getElementById('ingredientRows').innerHTML='';(r.ingredients||[]).forEach(i=>addIngredientRow(i.name,i.qty,i.unit));showManualForm();
@@ -962,17 +1030,22 @@ function populateForm(r){
 // ── SAVE / EDIT / DELETE ──
 async function saveRecipe(){
   const name=document.getElementById('recipeName').value.trim();if(!name){toast('Please add a recipe name');return;}
-  const ings=getIngredients().map(i=>normaliseIngredient({...i,qty:parseFloat(i.qty)||0}));const recipe={id:editingId||Date.now().toString(),name,portions:parseInt(document.getElementById('recipePortions').value)||5,cookTime:document.getElementById('recipeCookTime').value.trim(),tags:document.getElementById('recipeTags').value.split(',').map(t=>t.trim()).filter(Boolean),notes:document.getElementById('recipeNotes').value.trim(),ingredients:ings,method:document.getElementById('recipeMethod').value.trim(),createdAt:editingId?(recipes.find(r=>r.id===editingId)?.createdAt||Date.now()):Date.now(),updatedAt:Date.now()};
+  const ings=getIngredients().map(i=>normaliseIngredient({...i,qty:parseFloat(i.qty)||0}));
+  const recipe={id:editingId||Date.now().toString(),name,portions:parseInt(document.getElementById('recipePortions').value)||5,cookTime:document.getElementById('recipeCookTime').value.trim(),tags:document.getElementById('recipeTags').value.split(',').map(t=>t.trim()).filter(Boolean),notes:document.getElementById('recipeNotes').value.trim(),ingredients:ings,method:document.getElementById('recipeMethod').value.trim(),createdAt:editingId?(recipes.find(r=>r.id===editingId)?.createdAt||Date.now()):Date.now(),updatedAt:Date.now()};
   if(editingId){recipes=recipes.map(r=>r.id===editingId?recipe:r);editingId=null;}else recipes.push(recipe);
-  scheduleSave();toast('✅ Recipe saved and syncing…');resetAddForm();showSection('cookbook',document.querySelectorAll('.nav-tab')[0]);
+  scheduleSave();toast('✅ Recipe saved!');resetAddForm();closeAddSheet();renderCookbook();
 }
 function resetAddForm(){
-  document.getElementById('rawRecipeText').value='';clearTranscript();document.getElementById('recipeForm').style.display='none';
+  document.getElementById('rawRecipeText').value='';
+  document.getElementById('recipeForm').style.display='none';
   ['recipeName','recipeCookTime','recipeTags','recipeNotes','recipeMethod'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('recipePortions').value='5';document.getElementById('ingredientRows').innerHTML='';editingId=null;
 }
-function editRecipe(id){closeModal();const r=recipes.find(x=>x.id===id);if(!r)return;editingId=id;showSection('add',document.querySelectorAll('.nav-tab')[1]);populateForm(r);window.scrollTo(0,0);}
-async function deleteRecipe(id){if(!confirm('Delete this recipe?'))return;recipes=recipes.filter(r=>r.id!==id);await uploadToDrive(recipes);closeModal();renderCookbook();toast('🗑 Recipe deleted');}
+function editRecipe(id){
+  closeModal();const r=recipes.find(x=>x.id===id);if(!r)return;
+  editingId=id;openAddSheet();switchAddTab('manual');populateForm(r);
+}
+async function deleteRecipe(id){if(!confirm('Delete this recipe?'))return;recipes=recipes.filter(r=>r.id!==id);await uploadToDrive(recipes);closeModal();renderCookbook();toast('🗑 Deleted');}
 
 // ── SETTINGS ──
 function saveApiKey(){const k=document.getElementById('apiKeyInput').value.trim();if(!k.startsWith('sk-ant-')){document.getElementById('apiStatus').textContent='⚠ Key should start with sk-ant-';return;}localStorage.setItem('mealflow_api_key',k);document.getElementById('apiStatus').textContent='✓ Saved';document.getElementById('apiStatus').style.color='#7FD17F';toast('✅ API key saved');}
@@ -980,7 +1053,7 @@ function saveSettings(){localStorage.setItem('mealflow_portions',document.getEle
 function loadSettings(){const k=localStorage.getItem('mealflow_api_key');if(k){document.getElementById('apiKeyInput').value=k;document.getElementById('apiStatus').textContent='✓ Saved';document.getElementById('apiStatus').style.color='#7FD17F';}const p=localStorage.getItem('mealflow_portions');if(p)document.getElementById('defaultPortions').value=p;const pw=localStorage.getItem('mealflow_per_week');if(pw)document.getElementById('recipesPerWeek').value=pw;}
 
 // ── EXPORT / IMPORT ──
-function exportData(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({recipes,exportedAt:new Date().toISOString(),version:'6.0'},null,2)],{type:'application/json'}));a.download=`mealflow-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();toast('✅ Backup exported');closeUserMenu();}
+function exportData(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({recipes,exportedAt:new Date().toISOString(),version:'9.0'},null,2)],{type:'application/json'}));a.download=`mealflow-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();toast('✅ Backup exported');closeUserMenu();}
 function importData(e){const file=e.target.files[0];if(!file)return;const r=new FileReader();r.onload=async ev=>{try{const d=JSON.parse(ev.target.result);if(!d.recipes)throw new Error('Invalid');if(!confirm(`Import ${d.recipes.length} recipes?`))return;const ids=new Set(recipes.map(r=>r.id));const n=d.recipes.filter(r=>!ids.has(r.id));recipes=[...recipes,...n];await uploadToDrive(recipes);renderCookbook();toast(`✅ Imported ${n.length} new recipes`);}catch{toast('❌ Invalid backup file');}};r.readAsText(file);e.target.value='';}
 
 // ── PLANNER ──
@@ -995,7 +1068,7 @@ function initPlanner(){
 function onRecipeCountChange(){targetMealCount=parseInt(document.getElementById('recipeCountPicker').value);savePlanState();}
 function toggleRecipePick(id){if(weekPlan.includes(id)){weekPlan=weekPlan.filter(x=>x!==id);}else{weekPlan.push(id);}savePlanState();renderPickerList();}
 const savePlanState=()=>localStorage.setItem('mealflow_weekplan',JSON.stringify({ids:weekPlan,target:targetMealCount}));
-function suggestPlan(){if(!recipes.length){toast('Add some recipes first');return;}const hist=JSON.parse(localStorage.getItem('mealflow_history')||'[]');const rec=new Set(hist.slice(-12).map(h=>h.id));let pool=recipes.filter(r=>!rec.has(r.id));if(pool.length<targetMealCount)pool=[...recipes];weekPlan=pool.sort(()=>Math.random()-.5).slice(0,targetMealCount).map(r=>r.id);savePlanState();renderPickerList();toast('🔀 Suggested '+targetMealCount+' recipes');}
+function suggestPlan(){if(!recipes.length){toast('Add some recipes first');return;}const hist=JSON.parse(localStorage.getItem('mealflow_history')||'[]');const rec=new Set(hist.slice(-12).map(h=>h.id));let pool=recipes.filter(r=>!rec.has(r.id));if(pool.length<targetMealCount)pool=[...recipes];weekPlan=pool.sort(()=>Math.random()-.5).slice(0,targetMealCount).map(r=>r.id);savePlanState();renderPickerList();toast('🔀 Suggested '+targetMealCount+' meals');}
 function clearPlanSelections(){weekPlan=[];savePlanState();renderPickerList();}
 function renderPickerList(){
   const sorted=[...recipes].sort((a,b)=>{const as=weekPlan.includes(a.id),bs=weekPlan.includes(b.id);return as&&!bs?-1:!as&&bs?1:a.name.localeCompare(b.name);});
@@ -1004,9 +1077,12 @@ function renderPickerList(){
   el.querySelectorAll('.picker-item[data-pick-id]').forEach(item=>{item.addEventListener('click',()=>toggleRecipePick(item.dataset.pickId));});
 }
 function approvePlan(){
-  if(!weekPlan.length)return;approvedPlan=weekPlan.map(id=>recipes.find(r=>r.id===id)).filter(Boolean);
+  if(!weekPlan.length){toast('Select some meals first');return;}
+  approvedPlan=weekPlan.map(id=>recipes.find(r=>r.id===id)).filter(Boolean);
   const hist=JSON.parse(localStorage.getItem('mealflow_history')||'[]');approvedPlan.forEach(r=>hist.push({id:r.id,date:Date.now()}));localStorage.setItem('mealflow_history',JSON.stringify(hist));
-  buildShoppingList(approvedPlan);showSection('shopping',document.querySelectorAll('.nav-tab')[3]);toast('✅ Shopping list ready!');
+  buildShoppingList(approvedPlan);
+  switchTab('shopping',document.getElementById('tab-shopping'));
+  toast('✅ Shopping list ready!');
 }
 
 // ── SHOPPING ──
@@ -1030,24 +1106,64 @@ function renderShoppingList(plan){
   document.getElementById('shoppingEmpty').style.display='none';document.getElementById('shoppingContent').style.display='block';
   document.getElementById('shoppingRecipeList').innerHTML=(plan||approvedPlan).map(r=>`• ${r.name}`).join('<br>');
   let cur='';
-  document.getElementById('buyList').innerHTML=shoppingList.buy.map(item=>{let h='';if(item.category!==cur){if(cur)h+='<div style="height:6px"></div>';cur=item.category;}h+=`<div class="shop-item"><span class="shop-item-name">${item.name}</span><span class="shop-item-qty">${item.display}</span></div>`;return h;}).join('');
-  document.getElementById('stapleList').innerHTML=shoppingList.staples.map((item,i)=>`<div class="staple-item"><input type="checkbox" id="staple_${i}"><label for="staple_${i}">${item.name}</label><span class="shop-item-qty">${item.display}</span></div>`).join('');
-  buildPlainText();
+  const buyEl=document.getElementById('buyList');
+  buyEl.innerHTML=shoppingList.buy.map((item,i)=>{
+    let h='';
+    if(item.category!==cur){if(cur)h+='<div style="height:6px"></div>';cur=item.category;}
+    h+=`<div class="shop-item${item.excluded?' excluded':''}" data-type="buy" data-idx="${i}">
+      <input type="checkbox" id="buy_${i}"${!item.excluded?' checked':''}>
+      <label for="buy_${i}" class="shop-item-name">${item.name}</label>
+      <span class="shop-item-qty">${item.display}</span>
+    </div>`;
+    return h;
+  }).join('');
+  const stapleRows=shoppingList.staples.length?`
+    <div style="height:8px"></div>
+    <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--il);padding:8px 0 6px">🏠 Check cupboards</div>
+    ${shoppingList.staples.map((item,i)=>`
+      <div class="shop-item${item.stapleExcluded===false?'':' excluded'}" data-type="staple" data-idx="${i}">
+        <input type="checkbox" id="staple_${i}"${item.stapleExcluded===false?' checked':''}>
+        <label for="staple_${i}" class="shop-item-name">${item.name}</label>
+        <span class="shop-item-qty">${item.display}</span>
+      </div>`).join('')}`:'';
+  buyEl.innerHTML+=stapleRows;
+  buyEl.querySelectorAll('.shop-item[data-type="buy"] input').forEach(cb=>{
+    cb.addEventListener('change',()=>{const idx=parseInt(cb.closest('.shop-item').dataset.idx);shoppingList.buy[idx].excluded=!cb.checked;cb.closest('.shop-item').classList.toggle('excluded',!cb.checked);updateBuySummary();buildPlainText();});
+  });
+  buyEl.querySelectorAll('.shop-item[data-type="staple"] input').forEach(cb=>{
+    cb.addEventListener('change',()=>{const idx=parseInt(cb.closest('.shop-item').dataset.idx);shoppingList.staples[idx].stapleExcluded=cb.checked?false:true;cb.closest('.shop-item').classList.toggle('excluded',!cb.checked);updateBuySummary();buildPlainText();});
+  });
+  updateBuySummary();buildPlainText();
 }
-function buildPlainText(){const l=['=== BUY THIS WEEK ==='];shoppingList.buy.forEach(i=>l.push(`${i.name} — ${i.display}`));l.push('\n=== CHECK CUPBOARDS ===');shoppingList.staples.forEach(i=>l.push(`${i.name} — ${i.display}`));document.getElementById('plainTextList').value=l.join('\n');}
-function addStaplesToList(){const checked=shoppingList.staples.filter((_,i)=>document.getElementById(`staple_${i}`)?.checked);if(!checked.length){toast('Tick some staples first');return;}shoppingList.buy=[...shoppingList.buy,...checked.map(i=>({...i,isStaple:false}))];shoppingList.staples=shoppingList.staples.filter((_,i)=>!document.getElementById(`staple_${i}`)?.checked);renderShoppingList();buildPlainText();toast(`✅ Added ${checked.length} staples`);}
+function updateBuySummary(){
+  const buyActive=shoppingList.buy.filter(i=>!i.excluded).length;
+  const stapleActive=shoppingList.staples.filter(i=>i.stapleExcluded===false).length;
+  const total=shoppingList.buy.length+shoppingList.staples.length;
+  const active=buyActive+stapleActive;
+  const el=document.getElementById('buyListSummary');if(!el)return;
+  el.textContent=active===total?`${total} items`:`${active} of ${total} items selected`;
+}
+function buildPlainText(){
+  const l=['=== BUY THIS WEEK ==='];
+  shoppingList.buy.filter(i=>!i.excluded).forEach(i=>l.push(`${i.name} — ${i.display}`));
+  const tickedStaples=shoppingList.staples.filter(i=>i.stapleExcluded===false);
+  if(tickedStaples.length){l.push('');tickedStaples.forEach(i=>l.push(`${i.name} — ${i.display}`));}
+  document.getElementById('plainTextList').value=l.join('\n');
+}
 const copyList=()=>navigator.clipboard.writeText(document.getElementById('plainTextList').value).then(()=>toast('📋 Copied!'));
 function clearShoppingList(){if(!confirm('Clear this shopping list?'))return;shoppingList={buy:[],staples:[]};localStorage.removeItem('mealflow_shopping');document.getElementById('shoppingEmpty').style.display='block';document.getElementById('shoppingContent').style.display='none';toast('🗑 List cleared');}
-function sendToOcado(){localStorage.setItem('mealflow_ocado_list',JSON.stringify([...shoppingList.buy,...shoppingList.staples.filter((_,i)=>document.getElementById(`staple_${i}`)?.checked)].map(i=>({name:i.name,qty:i.display}))));toast('🛍 List sent! Open Ocado, then click the MealFlow extension', 4000);}
+function sendToOcado(){
+  const buyItems=shoppingList.buy.filter(i=>!i.excluded);
+  const stapleItems=shoppingList.staples.filter(i=>i.stapleExcluded===false);
+  const list=[...buyItems,...stapleItems].map(i=>({name:i.name,qty:i.display,unit:i.unit,rawQty:i.qty}));
+  localStorage.setItem('mealflow_ocado_list',JSON.stringify(list));
+  toast('🛍 List sent! Open Ocado then the MealFlow extension',4000);
+}
 function loadSavedShoppingList(){const s=localStorage.getItem('mealflow_shopping');if(s)try{const d=JSON.parse(s);shoppingList=d.list;approvedPlan=(d.recipes||[]).map(name=>({name}));renderShoppingList();}catch(e){}}
-</script>
-<script>
+
+// ── PWA SERVICE WORKER ──
 if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('sw.js')
-      .then(r=>console.log('[MealFlow] SW registered'))
-      .catch(e=>console.log('[MealFlow] SW failed:',e));
-  });
+  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 }
 </script>
 </body>
