@@ -1,74 +1,64 @@
 // MealFlow Service Worker
-const CACHE = 'mealflow-v1';
+// Bump CACHE on every deploy so the browser detects a new worker and the app
+// can show the "update available" prompt.
+const CACHE = 'mealflow-v5';
 
-// Files to cache for offline use
+// Files to cache for offline fallback
 const SHELL = [
   '/',
   '/index.html',
-  'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=DM+Sans:wght@300;400;500&display=swap',
+  'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=DM+Sans:wght@300;400;500;600&display=swap',
   'https://accounts.google.com/gsi/client'
 ];
 
-// Install — cache app shell
+// Install — pre-cache the shell. Do NOT skipWaiting automatically:
+// we wait until the user accepts the update prompt.
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE).then(cache => {
-      // Cache what we can, ignore failures for external resources
-      return Promise.allSettled(SHELL.map(url => cache.add(url).catch(() => {})));
-    })
-  );
-  self.skipWaiting();
-});
-
-// Activate — clean old caches
-self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+    caches.open(CACHE).then(cache =>
+      Promise.allSettled(SHELL.map(url => cache.add(url).catch(() => {})))
     )
   );
-  self.clients.claim();
+});
+
+// The page asks the waiting worker to activate when the user taps "Reload".
+self.addEventListener('message', e => {
+  if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
+});
+
+// Activate — clean old caches and take control.
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
+  );
 });
 
 // Fetch strategy:
-// - Google APIs / Anthropic: network only (must be live)
-// - App shell (index.html, fonts): cache first, fallback to network
-// - Everything else: network first, fallback to cache
+// - Google / Anthropic APIs: network only (must be live)
+// - Everything else (incl. index.html): network-first, fall back to cache offline
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
 
-  // Always network for API calls
   if (
     url.hostname.includes('googleapis.com') ||
     url.hostname.includes('anthropic.com') ||
-    url.hostname.includes('accounts.google.com')
+    url.hostname.includes('accounts.google.com') ||
+    url.hostname.includes('ocado.com')
   ) {
     e.respondWith(fetch(e.request));
     return;
   }
 
-  // Cache first for app shell
-  if (url.pathname === '/' || url.pathname === '/index.html') {
-    e.respondWith(
-      caches.match(e.request).then(cached => {
-        const networkFetch = fetch(e.request).then(res => {
-          const clone = res.clone();
-          caches.open(CACHE).then(cache => cache.put(e.request, clone));
-          return res;
-        });
-        // Return cached immediately, update in background
-        return cached || networkFetch;
-      })
-    );
-    return;
-  }
-
-  // Network first for everything else
+  // Network-first for everything else, caching fresh copies as we go.
   e.respondWith(
     fetch(e.request)
       .then(res => {
-        const clone = res.clone();
-        caches.open(CACHE).then(cache => cache.put(e.request, clone));
+        if (res && res.status === 200 && (e.request.method === 'GET')) {
+          const clone = res.clone();
+          caches.open(CACHE).then(cache => cache.put(e.request, clone));
+        }
         return res;
       })
       .catch(() => caches.match(e.request))

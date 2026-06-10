@@ -1,0 +1,691 @@
+{
+ "version": 1,
+ "updated": "2026-06-10",
+ "currency": "GBP",
+ "note": "Indicative UK supermarket prices, per unit (per g/ml for weights, per item for pcs/pot/sachet). For guidance only.",
+ "prices": {
+  "Beef Mince": {
+   "g": 0.007
+  },
+  "Lamb Mince": {
+   "g": 0.009
+  },
+  "Pork Mince": {
+   "g": 0.006
+  },
+  "Turkey Mince": {
+   "g": 0.0075
+  },
+  "Diced Beef": {
+   "g": 0.0095
+  },
+  "Diced Lamb Shoulder": {
+   "g": 0.009
+  },
+  "Beef Shin": {
+   "g": 0.008
+  },
+  "Beef Short Ribs": {
+   "g": 0.009
+  },
+  "Beef Fillet": {
+   "g": 0.032
+  },
+  "Beef Fillet Strips": {
+   "g": 0.03
+  },
+  "Beef Stir Fry Strips": {
+   "g": 0.015
+  },
+  "Rump Steak": {
+   "g": 0.016
+  },
+  "Chicken Thighs": {
+   "g": 0.005
+  },
+  "Chicken Thigh Fillets": {
+   "g": 0.008
+  },
+  "Chicken Breast Fillets": {
+   "g": 0.011,
+   "pcs": 1.3
+  },
+  "Whole Chicken": {
+   "g": 0.004
+  },
+  "Cooked Ham": {
+   "g": 0.012
+  },
+  "Corned Beef": {
+   "g": 0.009
+  },
+  "Pork Sausages": {
+   "pcs": 0.35
+  },
+  "Pork Loin Steaks": {
+   "g": 0.009
+  },
+  "Pork Belly": {
+   "g": 0.007
+  },
+  "Pork Shoulder Joint": {
+   "g": 0.006
+  },
+  "Pork Tenderloin": {
+   "g": 0.012
+  },
+  "Smoked Bacon Lardons": {
+   "g": 0.009
+  },
+  "Chorizo Ring": {
+   "g": 0.011
+  },
+  "Prosciutto": {
+   "g": 0.025
+  },
+  "Lamb Shoulder Joint": {
+   "g": 0.0095
+  },
+  "Racks of Lamb": {
+   "pcs": 7.5
+  },
+  "Venison Steaks": {
+   "pcs": 4.5
+  },
+  "Duck Breasts": {
+   "pcs": 3.5
+  },
+  "Salmon Fillets": {
+   "pcs": 2.5
+  },
+  "Side of Salmon": {
+   "g": 0.018
+  },
+  "Sea Bass Fillets": {
+   "pcs": 1.8
+  },
+  "Cod Loin": {
+   "g": 0.016
+  },
+  "Smoked Haddock Fillets": {
+   "g": 0.015
+  },
+  "Fish Pie Mix": {
+   "g": 0.014
+  },
+  "Raw King Prawns": {
+   "g": 0.016
+  },
+  "Tinned Tuna": {
+   "g": 0.009
+  },
+  "Mussels": {
+   "g": 0.005
+  },
+  "Squid Rings": {
+   "g": 0.012
+  },
+  "King Scallops": {
+   "pcs": 1.2
+  },
+  "Fish Fingers": {
+   "pcs": 0.2
+  },
+  "Onions": {
+   "pcs": 0.15
+  },
+  "Red Onions": {
+   "pcs": 0.2
+  },
+  "Shallots": {
+   "pcs": 0.12
+  },
+  "Garlic Cloves": {
+   "pcs": 0.05
+  },
+  "Carrots": {
+   "pcs": 0.1,
+   "g": 0.0012
+  },
+  "Celery Sticks": {
+   "pcs": 0.12
+  },
+  "Leeks": {
+   "pcs": 0.35
+  },
+  "Red Peppers": {
+   "pcs": 0.45
+  },
+  "Yellow Peppers": {
+   "pcs": 0.5
+  },
+  "Green Peppers": {
+   "pcs": 0.4
+  },
+  "Courgettes": {
+   "pcs": 0.45
+  },
+  "Aubergines": {
+   "pcs": 0.7
+  },
+  "Broccoli": {
+   "pcs": 0.6
+  },
+  "Cauliflower": {
+   "pcs": 0.8
+  },
+  "Butternut Squash": {
+   "pcs": 1.2
+  },
+  "Cucumber": {
+   "pcs": 0.65
+  },
+  "Red Chilli": {
+   "pcs": 0.1
+  },
+  "Sweet Potatoes": {
+   "pcs": 0.45,
+   "g": 0.0016
+  },
+  "Baking Potatoes": {
+   "pcs": 0.3
+  },
+  "Bramley Apples": {
+   "pcs": 0.35
+  },
+  "Apples": {
+   "pcs": 0.3
+  },
+  "Lemon": {
+   "pcs": 0.25
+  },
+  "Lime": {
+   "pcs": 0.25
+  },
+  "Little Gem Lettuce": {
+   "pcs": 0.5
+  },
+  "Spring Onions": {
+   "pcs": 0.06
+  },
+  "Cherry Tomatoes": {
+   "g": 0.004
+  },
+  "Baby Potatoes": {
+   "g": 0.002
+  },
+  "Maris Piper Potatoes": {
+   "g": 0.0011
+  },
+  "Chestnut Mushrooms": {
+   "g": 0.0035
+  },
+  "Mixed Wild Mushrooms": {
+   "g": 0.009
+  },
+  "Dried Porcini Mushrooms": {
+   "g": 0.12
+  },
+  "Spinach": {
+   "g": 0.006
+  },
+  "Kale": {
+   "g": 0.004
+  },
+  "Savoy Cabbage": {
+   "g": 0.0015
+  },
+  "Red Cabbage": {
+   "g": 0.0015
+  },
+  "Green Beans": {
+   "g": 0.005
+  },
+  "Tenderstem Broccoli": {
+   "g": 0.007
+  },
+  "Pak Choi": {
+   "g": 0.005
+  },
+  "Baby Corn": {
+   "g": 0.008
+  },
+  "Beansprouts": {
+   "g": 0.002
+  },
+  "Frozen Peas": {
+   "g": 0.002
+  },
+  "Sweetcorn": {
+   "g": 0.003
+  },
+  "Frozen Chips": {
+   "g": 0.0015
+  },
+  "Frozen Cherries": {
+   "g": 0.005
+  },
+  "Mixed Salad Leaves": {
+   "g": 0.009
+  },
+  "Water Chestnuts": {
+   "g": 0.004
+  },
+  "Pineapple Chunks": {
+   "g": 0.003
+  },
+  "Dried Apricots": {
+   "g": 0.007
+  },
+  "Sultanas": {
+   "g": 0.004
+  },
+  "Chopped Tomatoes": {
+   "g": 0.0011
+  },
+  "Passata": {
+   "g": 0.0013
+  },
+  "Tomato Puree": {
+   "g": 0.004
+  },
+  "Tomato Ketchup": {
+   "g": 0.003
+  },
+  "Black Beans": {
+   "g": 0.0013
+  },
+  "Red Kidney Beans": {
+   "g": 0.0013
+  },
+  "Kidney Beans": {
+   "g": 0.0013
+  },
+  "Cannellini Beans": {
+   "g": 0.0013
+  },
+  "Butter Beans": {
+   "g": 0.0013
+  },
+  "Chickpeas": {
+   "g": 0.0013
+  },
+  "Red Lentils": {
+   "g": 0.0025
+  },
+  "Dried Green Lentils": {
+   "g": 0.003
+  },
+  "Coconut Milk": {
+   "ml": 0.0018
+  },
+  "BBQ Sauce": {
+   "ml": 0.004
+  },
+  "Hoisin Sauce": {
+   "g": 0.006
+  },
+  "Oyster Sauce": {
+   "g": 0.005
+  },
+  "Soy Sauce": {
+   "ml": 0.005
+  },
+  "Fish Sauce": {
+   "ml": 0.006
+  },
+  "Sriracha": {
+   "g": 0.006
+  },
+  "Worcestershire Sauce": {
+   "ml": 0.005
+  },
+  "Mango Chutney": {
+   "g": 0.005
+  },
+  "Redcurrant Jelly": {
+   "g": 0.005
+  },
+  "Honey": {
+   "g": 0.006
+  },
+  "Pitted Black Olives": {
+   "g": 0.006
+  },
+  "Capers": {
+   "g": 0.012
+  },
+  "Green Pesto": {
+   "g": 0.008
+  },
+  "Harissa Paste": {
+   "g": 0.012
+  },
+  "Thai Green Curry Paste": {
+   "g": 0.01
+  },
+  "Thai Red Curry Paste": {
+   "g": 0.01
+  },
+  "Tikka Curry Paste": {
+   "g": 0.008
+  },
+  "Rogan Josh Paste": {
+   "g": 0.008
+  },
+  "White Miso Paste": {
+   "g": 0.015
+  },
+  "Curry Powder": {
+   "g": 0.012
+  },
+  "Garam Masala": {
+   "g": 0.015
+  },
+  "Ras El Hanout": {
+   "g": 0.015
+  },
+  "Jerk Seasoning": {
+   "g": 0.012
+  },
+  "Cajun Seasoning": {
+   "g": 0.012
+  },
+  "Smoked Paprika": {
+   "g": 0.015
+  },
+  "Ground Cumin": {
+   "g": 0.015
+  },
+  "Ground Turmeric": {
+   "g": 0.015
+  },
+  "Ground Coriander": {
+   "g": 0.015
+  },
+  "Ground Cinnamon": {
+   "g": 0.02
+  },
+  "Chilli Powder": {
+   "g": 0.015
+  },
+  "Chilli Flakes": {
+   "g": 0.02
+  },
+  "Garlic Granules": {
+   "g": 0.015
+  },
+  "Fennel Seeds": {
+   "g": 0.02
+  },
+  "Nutmeg": {
+   "g": 0.04
+  },
+  "Sea Salt": {
+   "g": 0.0015
+  },
+  "Dried Oregano": {
+   "g": 0.03
+  },
+  "Dried Basil": {
+   "g": 0.03
+  },
+  "Thyme": {
+   "g": 0.03
+  },
+  "Saffron": {
+   "pcs": 2.0
+  },
+  "Fajita Seasoning": {
+   "sachet": 0.45
+  },
+  "Fresh Ginger": {
+   "g": 0.008
+  },
+  "Fresh Parsley": {
+   "g": 0.025
+  },
+  "Fresh Basil": {
+   "g": 0.03
+  },
+  "Fresh Dill": {
+   "g": 0.03
+  },
+  "Fresh Mint": {
+   "g": 0.025
+  },
+  "Fresh Rosemary": {
+   "g": 0.025
+  },
+  "Fresh Thyme": {
+   "g": 0.03
+  },
+  "Fresh Tarragon": {
+   "g": 0.035
+  },
+  "Fresh Sage": {
+   "g": 0.03
+  },
+  "Eggs": {
+   "pcs": 0.22
+  },
+  "Butter": {
+   "g": 0.007
+  },
+  "Whole Milk": {
+   "ml": 0.001
+  },
+  "Double Cream": {
+   "ml": 0.004
+  },
+  "Creme Fraiche": {
+   "g": 0.004
+  },
+  "Soured Cream": {
+   "ml": 0.0035,
+   "pot": 1.0
+  },
+  "Greek Yogurt": {
+   "g": 0.003,
+   "pot": 1.2
+  },
+  "Mascarpone": {
+   "g": 0.005
+  },
+  "Ricotta": {
+   "g": 0.0045
+  },
+  "Cheddar Cheese": {
+   "g": 0.007
+  },
+  "Mozzarella": {
+   "g": 0.006
+  },
+  "Parmesan Cheese": {
+   "g": 0.015
+  },
+  "Halloumi": {
+   "g": 0.009
+  },
+  "Paneer": {
+   "g": 0.008
+  },
+  "Soft Cheese with Garlic and Herbs": {
+   "g": 0.007
+  },
+  "Mayonnaise": {
+   "g": 0.0035
+  },
+  "Pasta": {
+   "g": 0.0015
+  },
+  "Spaghetti": {
+   "g": 0.0015
+  },
+  "Linguine": {
+   "g": 0.0018
+  },
+  "Pappardelle": {
+   "g": 0.003
+  },
+  "Macaroni": {
+   "g": 0.0015
+  },
+  "Small Pasta Shapes": {
+   "g": 0.0018
+  },
+  "Orzo Pasta": {
+   "g": 0.0025
+  },
+  "Lasagne Sheets": {
+   "g": 0.002
+  },
+  "Cannelloni Tubes": {
+   "g": 0.003
+  },
+  "Basmati Rice": {
+   "g": 0.0018
+  },
+  "Jasmine Rice": {
+   "g": 0.0018
+  },
+  "Long Grain Rice": {
+   "g": 0.0014
+  },
+  "Risotto Rice": {
+   "g": 0.0025
+  },
+  "Paella Rice": {
+   "g": 0.003
+  },
+  "Couscous": {
+   "g": 0.002
+  },
+  "Gnocchi": {
+   "g": 0.002
+  },
+  "Egg Noodles": {
+   "g": 0.0025
+  },
+  "Rice Noodles": {
+   "g": 0.0025
+  },
+  "Tortilla Wraps": {
+   "pcs": 0.15
+  },
+  "Flatbreads": {
+   "pcs": 0.3
+  },
+  "Pitta Breads": {
+   "pcs": 0.15
+  },
+  "Taco Shells": {
+   "pcs": 0.18
+  },
+  "Tortilla Chips": {
+   "g": 0.004
+  },
+  "Bao Buns": {
+   "pcs": 0.3
+  },
+  "Breadcrumbs": {
+   "g": 0.0025
+  },
+  "Panko Breadcrumbs": {
+   "g": 0.0035
+  },
+  "Plain Flour": {
+   "g": 0.0008
+  },
+  "Self Raising Flour": {
+   "g": 0.0009
+  },
+  "Cornflour": {
+   "g": 0.002
+  },
+  "Suet": {
+   "g": 0.004
+  },
+  "Brown Sugar": {
+   "g": 0.0012
+  },
+  "Ground Almonds": {
+   "g": 0.015
+  },
+  "Flaked Almonds": {
+   "g": 0.015
+  },
+  "Chestnuts": {
+   "g": 0.008
+  },
+  "Salted Peanuts": {
+   "g": 0.006
+  },
+  "Sesame Seeds": {
+   "g": 0.008
+  },
+  "Puff Pastry": {
+   "g": 0.004
+  },
+  "Olive Oil": {
+   "ml": 0.005
+  },
+  "Vegetable Oil": {
+   "ml": 0.002
+  },
+  "Sesame Oil": {
+   "ml": 0.012
+  },
+  "Truffle Oil": {
+   "ml": 0.06
+  },
+  "Balsamic Vinegar": {
+   "ml": 0.004
+  },
+  "Apple Cider Vinegar": {
+   "ml": 0.003
+  },
+  "Rice Vinegar": {
+   "ml": 0.004
+  },
+  "Red Wine": {
+   "ml": 0.006
+  },
+  "White Wine": {
+   "ml": 0.006
+  },
+  "Ale": {
+   "ml": 0.003
+  },
+  "Brandy": {
+   "ml": 0.015
+  },
+  "Beef Stock": {
+   "ml": 0.0008
+  },
+  "Chicken Stock": {
+   "ml": 0.0008
+  },
+  "Vegetable Stock": {
+   "ml": 0.0008
+  },
+  "Fish Stock": {
+   "ml": 0.001
+  },
+  "Lamb Stock": {
+   "ml": 0.0008
+  },
+  "Dijon Mustard": {
+   "g": 0.005
+  },
+  "English Mustard": {
+   "g": 0.005
+  },
+  "Wholegrain Mustard": {
+   "g": 0.005
+  },
+  "Firm Tofu": {
+   "g": 0.004
+  }
+ }
+}
