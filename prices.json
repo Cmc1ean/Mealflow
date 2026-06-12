@@ -1,6 +1,6 @@
 {
- "version": 2,
- "updated": "2026-06-10",
+ "version": 3,
+ "updated": "2026-06-11",
  "currency": "GBP",
  "note": "Indicative UK supermarket prices, per unit (per g/ml for weights, per item for pcs/pot/sachet). For guidance only.",
  "prices": {
@@ -60,7 +60,8 @@
    "g": 0.009
   },
   "Pork Sausages": {
-   "pcs": 0.35
+   "pcs": 0.35,
+   "g": 0.005
   },
   "Pork Loin Steaks": {
    "g": 0.009
@@ -87,22 +88,27 @@
    "g": 0.0095
   },
   "Racks of Lamb": {
-   "pcs": 7.5
+   "pcs": 7.5,
+   "g": 0.018
   },
   "Venison Steaks": {
-   "pcs": 4.5
+   "pcs": 4.5,
+   "g": 0.02
   },
   "Duck Breasts": {
-   "pcs": 3.5
+   "pcs": 3.5,
+   "g": 0.014
   },
   "Salmon Fillets": {
-   "pcs": 2.5
+   "pcs": 2.5,
+   "g": 0.018
   },
   "Side of Salmon": {
    "g": 0.018
   },
   "Sea Bass Fillets": {
-   "pcs": 1.8
+   "pcs": 1.8,
+   "g": 0.022
   },
   "Cod Loin": {
    "g": 0.016
@@ -117,7 +123,8 @@
    "g": 0.016
   },
   "Tinned Tuna": {
-   "g": 0.009
+   "g": 0.009,
+   "pcs": 0.9
   },
   "Mussels": {
    "g": 0.005
@@ -126,10 +133,12 @@
    "g": 0.012
   },
   "King Scallops": {
-   "pcs": 1.2
+   "pcs": 1.2,
+   "g": 0.04
   },
   "Fish Fingers": {
-   "pcs": 0.2
+   "pcs": 0.2,
+   "g": 0.007
   },
   "Onions": {
    "pcs": 0.15
@@ -257,7 +266,8 @@
    "g": 0.002
   },
   "Sweetcorn": {
-   "g": 0.003
+   "g": 0.003,
+   "pcs": 0.6
   },
   "Frozen Chips": {
    "g": 0.0015
@@ -281,10 +291,12 @@
    "g": 0.004
   },
   "Chopped Tomatoes": {
-   "g": 0.0011
+   "g": 0.0011,
+   "pcs": 0.45
   },
   "Passata": {
-   "g": 0.0013
+   "g": 0.0013,
+   "pcs": 0.9
   },
   "Tomato Puree": {
    "g": 0.004
@@ -293,22 +305,28 @@
    "g": 0.003
   },
   "Black Beans": {
-   "g": 0.0013
+   "g": 0.0013,
+   "pcs": 0.55
   },
   "Red Kidney Beans": {
-   "g": 0.0013
+   "g": 0.0013,
+   "pcs": 0.5
   },
   "Kidney Beans": {
-   "g": 0.0013
+   "g": 0.0013,
+   "pcs": 0.5
   },
   "Cannellini Beans": {
-   "g": 0.0013
+   "g": 0.0013,
+   "pcs": 0.5
   },
   "Butter Beans": {
-   "g": 0.0013
+   "g": 0.0013,
+   "pcs": 0.55
   },
   "Chickpeas": {
-   "g": 0.0013
+   "g": 0.0013,
+   "pcs": 0.5
   },
   "Red Lentils": {
    "g": 0.0025
@@ -317,7 +335,8 @@
    "g": 0.003
   },
   "Coconut Milk": {
-   "ml": 0.0018
+   "ml": 0.0018,
+   "pcs": 0.75
   },
   "BBQ Sauce": {
    "ml": 0.004
@@ -479,7 +498,8 @@
    "ml": 0.004
   },
   "Creme Fraiche": {
-   "g": 0.004
+   "g": 0.004,
+   "pcs": 1.1
   },
   "Soured Cream": {
    "ml": 0.0035,
@@ -499,7 +519,8 @@
    "g": 0.007
   },
   "Mozzarella": {
-   "g": 0.006
+   "g": 0.006,
+   "pcs": 0.95
   },
   "Parmesan Cheese": {
    "g": 0.015
@@ -625,7 +646,8 @@
    "g": 0.008
   },
   "Puff Pastry": {
-   "g": 0.004
+   "g": 0.004,
+   "pcs": 1.6
   },
   "Olive Oil": {
    "ml": 0.005
